@@ -1,52 +1,47 @@
 import { useState } from 'react';
-import Alert from '../../../components/Alert';
 
-const AddServiceModal = () => {
+const AddServiceModal = ({submitNewService}) => {
     const tags = ['makeup', 'brows', 'lashes'];
-    const formData = new FormData();
-    const [service, setService] = useState('');
-    const [tag, setTag] = useState('');
+    const [formInfo, setFormInfo] = useState({
+        service: '',
+        tag: '',
+        price: 0
+    });
 
 
     const handleChange = (e) => {
         const {name, value} = e.target;
-        if (name === 'service') setService(value);
-        if (name === 'tag') setTag(value);
+        if (name === 'service') setFormInfo({...formInfo, service: value})
+        if (name === 'tag') setFormInfo({...formInfo, tag: value})
+        if (name === 'price') setFormInfo({...formInfo, price: value})
+
     };
-
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        formData.append('service', service);
-        formData.append('tag', tag);
 
-        try {
-            const res = await fetch('http://localhost:5000/api/admin/services', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body:  new URLSearchParams(formData).toString(),
-            });
+        console.log({...formInfo})
+        submitNewService({...formInfo});
 
-            if (!res.ok) {
-                return <Alert type='error' message={`${res.message}`} />;
-            };
+        setFormInfo({...formInfo,
+            service: '',
+            tag: '',
+            price: 0
+        });
 
-            const data = await res.json();
-            setService('');
-            setTag('');
-            document.getElementById('add-service-modal').close();
-            return <Alert type='success' message={`${data.service} Service added successfully!`} />;
-        } catch (error) {
-            console.error('Error:', error);
-            return <Alert type='error' message={`Error: ${error.message}`} />;
-        }
+        document.getElementById('add-service-modal').close();
     };
 
+    const resetForm = () => {
+        setFormInfo({...formInfo,
+            service: '',
+            tag: '',
+            price: 0
+        })
+    }
+
     return (
-        <dialog id='add-service-modal' className='modal'>
+        <dialog id='add-service-modal' className='modal' onClose={resetForm}>
             <div className='modal-box'>
                 <form method='dialog'>
                     {/* if there is a button in form, it will close the modal */}
@@ -56,17 +51,22 @@ const AddServiceModal = () => {
                 <form id='form' className='my-4 mx-16 font-libertinus tracking-widest' onSubmit={handleSubmit}>
                     {/* <h3 className='font-bold text-lg mb-4'>Add New Service</h3> */}
                     <fieldset className='fieldset'>
-                        <legend className='fieldset-legend'>Service</legend>
-                        <input type='text' name='service' value={service} onChange={handleChange} className='input validator' placeholder='Service Name' />
+                        <legend className='fieldset-legend text-base'>Service</legend>
+                        <input type='text' name='service' value={`${formInfo.service}`} onChange={handleChange} className='input validator' placeholder='Service Name' required title='Only letters and/or dash (hyphen)' />
+                        <div className="validator-hint">Please enter a service name</div>
 
-                        <legend className='fieldset-legend'>Tag</legend>
-                        <input type='text' name='tag' value={tag} onChange={handleChange} className='input validator' placeholder='Service Tag' list='tags' />
+                        <legend className='fieldset-legend text-base'>Tag</legend>
+                        <input type='text' name='tag' value={`${formInfo.tag}`} onChange={handleChange} className='input validator' placeholder='Service Tag' list='tags' required title='Only letters' />
+                        <div className="validator-hint">Please enter a service tag (e.g: makeup, lashes, or brows)</div>
                         <datalist id='tags'>
                             {tags.map((tag, index) => (
                                 <option value={tag} key={index}>{tag}</option>
                             ))}
                         </datalist>
-                    </fieldset>
+
+                        <legend className='fieldset-legend text-base'>Price</legend>
+                        <input type='number' name='price' value={`${formInfo.price}`} onChange={handleChange} className='input' placeholder='Service Price' />
+                   </fieldset>
 
                     <button
                         value='submit'
