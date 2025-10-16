@@ -86,7 +86,7 @@ const ConfirmPopup = ({
                 >
                 <div className='modal-box'>
                     {title && <h3 className='font-bold text-lg'>{title}</h3>}
-                    {message && <p className='py-4'>{message}</p>}
+                    {message && <p className='py-4 text-wrap'>{message}</p>}
                     <div className='modal-action'>
                     <button
                         type='button'

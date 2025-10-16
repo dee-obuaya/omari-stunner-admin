@@ -49,7 +49,7 @@ export default function MainApp() {
                 </div>
 
                 {/* Footer: copyright */}
-                <div id='footer' className='fixed bottom-0 w-full bg-base-100'>
+                <div id='footer' className='fixed bottom-0 z-50 w-full bg-base-100'>
                     <Footer />
                 </div>
             </div>
