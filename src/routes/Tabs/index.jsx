@@ -1,13 +1,253 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import AddTabModal from './AddTabModal';
 import EditTabModal from './EditTabModal';
+import Table from '../../components/Table';
+import { SlPlus, SlPencil, SlTrash } from 'react-icons/sl';
+import Alert from '../../components/Alert';
+import Loader from '../../components/Loader';
+import ConfirmPopup from '../../components/ConfirmPopup';
 
 const Tabs = () => {
+    const [loading, setLoading] = useState(false);
+    const [visible, setVisible] = useState(false);
+    const [tabs, setTabs] = useState([]);
+    const [alert, setAlert] = useState({type: '', message: ''});
+    const [showAlert, setShowAlert] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [tabToEdit, setTabToEdit] = useState({});
+    const [tabToDelete, setTabToDelete] = useState({});
+    const formData = new FormData();
+
+    const columns = [
+        { title: 'Name', dataId: 'name' },
+        { title: 'Label', dataId: 'label' },
+        {title: 'Actions', dataId: 'actions', render: (tab) => {
+            // console.log(tab);
+            return (
+                <div className='flex space-x-4'>
+                    <button
+                        className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
+                        data-tip='Edit Tab'
+                        onClick={()=> handleEditClick(tab.row.original)}
+                    >
+                        <SlPencil className='text-lg' />
+                    </button>
+
+                    <ConfirmPopup
+                        trigger={
+                            <button
+                                className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
+                                data-tip='Delete Tab'
+                            >
+                                <SlTrash className='text-lg' />
+                            </button>
+                        }
+                        title='Delete Tab'
+                        message={`Are you sure you want to delete the ${tab.row.original.label} tab? This action cannot be undone.`}
+                        confirmText='Yes, Delete'
+                        cancelText='Cancel'
+                        onConfirm={() => handleDeleteClick(tab.row.original)}
+                        canCancel={true}
+                    />
+                </div>
+            )
+        }}
+    ];
+
+    useEffect(() => {
+        let visibilityTimer;
+        const timer = setTimeout(() => {
+            getTabs();
+            visibilityTimer = setTimeout(() => {
+                setVisible(true);
+            }, 500);
+        }, 1000);
+
+        return () => {
+            clearTimeout(timer);
+            clearTimeout(visibilityTimer);
+        };
+    }, []);
+
+    const getTabs = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('http://localhost:5000/api/tabs');
+            if (response.ok) {
+                const data = await response.json();
+                setTabs(data);
+                setLoading(false);
+            };
+        } catch (error) {
+            console.error('Error fetching tabs:', error);
+            setAlert({type: 'error', message: 'Failed to fetch tabs.'});
+            setShowAlert(true);
+        } finally {
+            setLoading(false);
+            setTimeout(() => setShowAlert(false), 3000)
+        };
+    };
+
+    const handleEditClick = (tab) => {
+        setIsEditModalOpen(true);
+        setTabToEdit({...tab});
+        setTimeout(() => document.getElementById('edit-tab-modal').showModal(), 200);
+    };
+
+    const handleCloseModal = () => {
+        if (isAddModalOpen) {
+            setIsAddModalOpen(false);
+        } else if (isEditModalOpen) {
+            setIsEditModalOpen(false);
+            setTabToEdit({});
+        };
+    };
+
+    const handleDeleteClick = (tab) => {
+        setTabToDelete({...tab});
+        setTimeout(() => {
+            deleteTab();
+        }, 200);
+    };
+
+    const addNewTab = async (data) => {
+        formData.append('name', data.name);
+        formData.append('label', data.label);
+
+        try {
+            const response = await fetch('http://localhost:5000/api/tabs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(formData).toString(),
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                setAlert({type: 'error', message: data.message || data.statusText || 'Failed to add new tab.'});
+                setShowAlert(true);
+                return;
+            };
+
+            if (data.tab) {
+                setAlert({type: 'success', message: data.message});
+                setShowAlert(true);
+                handleCloseModal();
+                getTabs();
+            } else {
+                setAlert({type: 'error', message: 'Failed to add new tab.'});
+                setShowAlert(true);
+            };
+        } catch (error) {
+            console.error('Error adding new tab:', error);
+            setAlert({type: 'error', message: 'Error adding new tab.'});
+            setShowAlert(true);
+        } finally {
+            handleCloseModal();
+            setTimeout(() => setShowAlert(false), 5000)
+        };
+    };
+
+    const editTab = async (data) => {
+        formData.append('name', data.name);
+        formData.append('label', data.label);
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/tabs/${tabToEdit._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(formData).toString(),
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                setAlert({type: 'error', message: data.message|| data.statusText || 'Failed to update tab.'});
+                setShowAlert(true);
+                return;
+            };
+
+            if (data.tab) {
+                setAlert({type: 'success', message: data.message});
+                setShowAlert(true);
+                handleCloseModal();
+                getTabs();
+            } else {
+                setAlert({type: 'error', message: 'Failed to update tab.'});
+                setShowAlert(true);
+            }
+        } catch (error) {
+            console.error('Error updating tab:', error);
+            setAlert({type: 'error', message: 'Error updating tab.'});
+            setShowAlert(true);
+        } finally {
+            handleCloseModal();
+            setTimeout(() => setShowAlert(false), 5000)
+        };
+    }
+
+    const deleteTab = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/tabs/${tabToDelete._id}`, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setAlert({type: 'error', message: data.message || 'Failed to delete tab.'});
+                setShowAlert(true);
+                return;
+            };
+
+            setAlert({type: 'success', message: data.message});
+            setShowAlert(true);
+            getTabs();
+        } catch (error) {
+            console.error('Error deleting tab:', error);
+            setAlert({type: 'error', message: 'Failed to delete tab.'});
+            setShowAlert(true);
+        } finally {
+            setTabToDelete(null);
+            setTimeout(() => setShowAlert(false), 5000)
+        };
+    };
+
     return (
-        <div className='p-4'>
-            <h1 className='text-2xl font-bold mb-4'>Tabs Page</h1>
-            <p>This is the Tabs page. Here you can manage and view tabs.</p>
-        </div>
+        loading ? (
+            <Loader size='xl' />
+        ) :
+        (
+            <>
+                {showAlert && <Alert type={alert.type} message={alert.message} />}
+
+                <div className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14' : 'opacity-0'}`}>
+                    <div className='space-y-0.5 mb-4'>
+                        <h1 className='text-2xl font-semibold font-italiana uppercase tracking-widest'>Tabs</h1>
+                        <p className='text-base font-libertinus tracking-wider text-neutral-500'>Manage tabs for pages available on the main website</p>
+                    </div>
+
+                    <div className='divider mt-0 mb-4'></div>
+
+                    <div className='flex justify-end mb-4'>
+                        <button
+                            className='btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center'
+                            onClick={()=>{
+                                setIsAddModalOpen(true);
+                                setTimeout(() => document.getElementById('add-tab-modal').showModal(), 200);
+                            }}
+                        >
+                        <SlPlus className='text-sm' /> New Tab
+                        </button>
+                    </div>
+
+                    <Table loading={loading} columns={columns} dataSource={tabs} />
+
+                    {isAddModalOpen && <AddTabModal submitNewTab={addNewTab} handleClose={handleCloseModal} />}
+                    {isEditModalOpen && <EditTabModal tab={tabToEdit} submitUpdatedTab={editTab} handleClose={handleCloseModal} />}
+                </div>
+            </>
+        )
     );
 };
 
