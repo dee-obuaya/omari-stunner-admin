@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AddServiceModal from './AddServiceModal';
 import EditServiceModal from './EditServiceModal';
 import Loader from '../../components/Loader';
-import Pagination from '../../components/Pagination';
+import Table from '../../components/Table';
 import { SlPlus, SlPencil, SlTrash } from 'react-icons/sl';
 import Alert from '../../components/Alert';
 import ConfirmPopup from '../../components/ConfirmPopup';
@@ -10,21 +10,80 @@ import ConfirmPopup from '../../components/ConfirmPopup';
 const Services = () => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [visible, setVisible] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const headers = ['Service', 'Tag', 'Price', 'Actions'];
+    const [serviceToDelete, setServiceToDelete] = useState({});
     const itemsPerPage = 10;
     const [serviceToEdit, setServiceToEdit] = useState({});
     const [alert, setAlert] = useState({ type: '', message: '' });
     const [showAlert, setShowAlert] = useState(false);
     const formData = new FormData();
 
+    const columns = [
+        {
+            title: 'Service',
+            dataId: 'service',
+        },
+        {
+            title: 'Tag',
+            dataId: 'tag',
+        },
+        {
+            title: 'Price',
+            dataId: 'price',
+        },
+        {
+            title: 'Actions',
+            dataId: 'actions',
+            render: (service) => {
+            // console.log(tab);
+                return (
+                    <div className='flex space-x-4'>
+                        <button
+                            className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
+                            data-tip='Edit Service'
+                            onClick={()=> handleEditClick(service.row.original)}
+                        >
+                            <SlPencil className='text-lg' />
+                        </button>
+
+                        <ConfirmPopup
+                            trigger={
+                                <button
+                                    className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
+                                    data-tip='Delete Service'
+                                >
+                                    <SlTrash className='text-lg' />
+                                </button>
+                            }
+                            title='Delete Tab'
+                            message={`Are you sure you want to delete the ${service.row.original.label} tab? This action cannot be undone.`}
+                            confirmText='Yes, Delete'
+                            cancelText='Cancel'
+                            onConfirm={() => handleDeleteClick(service.row.original)}
+                            canCancel={true}
+                        />
+                    </div>
+                )
+            }
+        }
+    ];
+
     useEffect(() => {
+        let visibilityTimer
         const timer = setTimeout(() => {
             getServices();
+            visibilityTimer = setTimeout(() => {
+                setVisible(true);
+            }, 500);
         }, 1000);
 
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            clearTimeout(visibilityTimer);
+        };
     }, []);
 
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -93,9 +152,20 @@ const Services = () => {
         }, 200);
     };
 
-    const handleCloseEditModal = () => {
-        setIsEditModalOpen(false);
-        setServiceToEdit({});
+    const handleCloseModal = () => {
+        if (isAddModalOpen) {
+            setIsAddModalOpen(false);
+        } else if (isEditModalOpen) {
+            setIsEditModalOpen(false);
+            setServiceToEdit({});
+        };
+    };
+
+    const handleDeleteClick = (tab) => {
+        setServiceToDelete({...tab});
+        setTimeout(() => {
+            deleteService();
+        }, 200);
     };
 
     const editService = async (data) => {
@@ -142,9 +212,9 @@ const Services = () => {
         }
     }
 
-    const deleteService = async (serviceId) => {
+    const deleteService = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/services/${serviceId._id}`, {
+            const response = await fetch(`http://localhost:5000/api/services/${serviceToDelete._id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -160,6 +230,7 @@ const Services = () => {
 
             setAlert({ type: 'success', message: data.message });
             setShowAlert(true);
+            getServices();
 
         } catch (error) {
             console.error('Error deleting service:', error);
@@ -169,7 +240,6 @@ const Services = () => {
             setTimeout(() => {
                 setShowAlert(false);
             }, 5000);
-            getServices();
         };
     };
 
@@ -181,8 +251,11 @@ const Services = () => {
             <>
                 {showAlert && <Alert type={alert.type} message={alert.message} />}
 
-                <div className='mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14'>
-                    <h1 className='text-2xl font-semibold font-italiana uppercase tracking-widest mb-4'>Services</h1>
+                <div className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14' : 'opacity-0'}`}>
+                    <div className='space-y-0.5 mb-4'>
+                        <h1 className='text-2xl font-semibold font-italiana uppercase tracking-widest'>Services</h1>
+                        <p className='text-base font-libertinus tracking-widest text-neutral-500'>Manage services offered</p>
+                    </div>
 
                     <div className='divider mt-0 mb-4'></div>
 
@@ -195,73 +268,19 @@ const Services = () => {
                         </button>
                     </div>
 
-                    <div className='overflow-x-auto h-96'>
-                        <table className='table table-pin-rows bg-base-100 tracking-wider font-libertinus'>
-                            {/* head */}
-                            <thead>
-                                <tr>
-                                    {headers.map((header, index) => (
-                                        <th key={index} className='text-nowrap'>{header}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {currentItems.length > 0 ? (
-                                    currentItems.map((service) => (
-                                        <tr key={service._id} className='hover:bg-base-300'>
-                                            <td className='text-nowrap'>{service.service}</td>
-                                            <td>{service.tag}</td>
-                                            <td>{service.price || '0'}</td>
-                                            <td>
-                                                <div className='flex space-x-4 justify-center'>
-                                                    <button
-                                                        className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
-                                                        data-tip='Edit Service'
-                                                        onClick={()=> handleEditClick(service)}
-                                                    >
-                                                        <SlPencil className='text-lg' />
-                                                    </button>
+                    <Table
+                        columns={columns}
+                        dataSource={currentItems}
+                        pagination={{
+                            totalItems: services.length,
+                            itemsPerPage: itemsPerPage,
+                            currentPage: currentPage,
+                            onPageChange: setCurrentPage
+                        }}
+                    />
 
-                                                    <ConfirmPopup
-                                                        trigger={
-                                                            <button
-                                                                className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
-                                                                data-tip='Delete Service'
-                                                            >
-                                                                <SlTrash className='text-lg' />
-                                                            </button>
-                                                        }
-                                                        title='Delete Service'
-                                                        message={`Are you sure you want to delete the ${service.service} service? This action cannot be undone.`}
-                                                        confirmText='Yes, Delete'
-                                                        cancelText='Cancel'
-                                                        onConfirm={() => deleteService(service)}
-                                                        canCancel={true}
-                                                    />
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={headers.length} className='text-center'>No images found.</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className='flex justify-center mt-4'>
-                        <Pagination
-                            totalItems={services.length}
-                            itemsPerPage={itemsPerPage}
-                            currentPage={currentPage}
-                            onPageChange={setCurrentPage}
-                        />
-                    </div>
-
-                    <AddServiceModal submitNewService={addNewService} />
-                    {isEditModalOpen && <EditServiceModal service={serviceToEdit} submitUpdatedService={editService} handleClose={handleCloseEditModal}/>}
+                    {isAddModalOpen && <AddServiceModal submitNewService={addNewService} />}
+                    {isEditModalOpen && <EditServiceModal service={serviceToEdit} submitUpdatedService={editService} handleClose={handleCloseModal}/>}
 
                 </div>
             </>
