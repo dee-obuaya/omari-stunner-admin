@@ -12,7 +12,7 @@ const EditServiceModal = ({ service, submitUpdatedService, handleClose }) => {
         const {name, value} = e.target;
 
         if (name === 'service') setFormInfo({...formInfo, service: value});
-        if (name === 'tag') setFormInfo({...formInfo, tag: value});
+        if (name === 'tag') setFormInfo({...formInfo, tag: e.target.value});
         if (name === 'price') setFormInfo({...formInfo, price: value})
     };
 
@@ -39,13 +39,13 @@ const EditServiceModal = ({ service, submitUpdatedService, handleClose }) => {
                         <div className="validator-hint">Please enter a service name</div>
 
                         <legend className='fieldset-legend text-base'>Tag</legend>
-                        <input type='text' name='tag' value={formInfo.tag}  className='input validator' placeholder='Service Tag' list='tags' onChange={handleChange} required title='Only letters' />
-                        <div className="validator-hint">Please enter a service tag (e.g: makeup, lashes, or brows)</div>
-                        <datalist id='tags'>
-                            {tags.map((tag, index) => (
-                                <option value={tag} key={index}>{tag}</option>
-                            ))}
-                        </datalist>
+                        <select name='tag' defaultValue={formInfo.tag} className='select validator' onChange={handleChange} required>
+                            <option disabled={true}>Pick a service tag</option>
+                            {tags.map((tag, index) => {
+                                return <option key={index}>{tag}</option>
+                            })}
+                        </select>
+                        <div className='validator-hint'>Please choose a service tag</div>
 
                         <legend className='fieldset-legend text-base'>Price</legend>
                         <input type='number' name='price' value={formInfo.price}  className='input' placeholder='Service Price' onChange={handleChange} />
