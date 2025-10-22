@@ -9,8 +9,8 @@ const Table = ({columns, dataSource, pagination, loading=false}) => {
                 {/* head */}
                 <thead>
                     <tr>
-                        {columns.map((column, index) => (
-                            <th key={index} className='text-nowrap'>{column.title}</th>
+                        {columns?.map((column, index) => (
+                            <th key={index} className='text-nowrap text-center'>{column.title}</th>
                         ))}
                     </tr>
                 </thead>
@@ -22,10 +22,10 @@ const Table = ({columns, dataSource, pagination, loading=false}) => {
                             </td>
                         </tr>
                     ) : (
-                        dataSource.length > 0 ? (
-                            dataSource.map((row, rowIndex) => (
-                                <tr key={rowIndex} className='hover:bg-base-300'>
-                                    {columns.map((column, colIndex) => (
+                        dataSource?.length > 0 ? (
+                            dataSource?.map((row, rowIndex) => (
+                                <tr key={rowIndex} className='hover:bg-base-300 text-center'>
+                                    {columns?.map((column, colIndex) => (
                                         <td key={colIndex} className='text-nowrap'>{column.render? column.render({ row: { original: row } }) : row[column.dataId]}</td>
                                     ))}
                                 </tr>
@@ -37,15 +37,15 @@ const Table = ({columns, dataSource, pagination, loading=false}) => {
                         )
                     )}
                 </tbody>
-                {pagination && dataSource.length > pagination.itemsPerPage && (
+                {pagination && dataSource?.length > pagination?.itemsPerPage && (
                     <tfoot>
                         <tr>
-                            <td colSpan={columns.length} className='text-center'>
+                            <td colSpan={columns?.length} className='text-center'>
                                 <Pagination
-                                    totalItems={pagination.totalItems}
-                                    itemsPerPage={pagination.itemsPerPage}
-                                    currentPage={pagination.currentPage}
-                                    onPageChange={pagination.onPageChange}
+                                    totalItems={pagination?.totalItems}
+                                    itemsPerPage={pagination?.itemsPerPage}
+                                    currentPage={pagination?.currentPage}
+                                    onPageChange={pagination?.onPageChange}
                                 />
                             </td>
                         </tr>
