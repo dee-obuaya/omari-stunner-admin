@@ -59,7 +59,7 @@ export default function Sidebar(props) {
             <input id='my-drawer' type='checkbox' className='drawer-toggle' />
             <div className='drawer-content absolute min-h-screen pt-10 w-full'>
                 {/* Page content here */}
-                <label htmlFor='my-drawer' className='drawer-button bg-base-300 shadow-md rounded-md fixed top-18 left-0 p-2'>
+                <label htmlFor='my-drawer' className='transition-all ease-in-out duration-300 drawer-button bg-base-300 shadow-md rounded-md fixed top-18 left-0 p-2 cursor-pointer hover:bg-accent/35'>
                     <SlMenu className='text-lg' />
                 </label>
                 {content}
