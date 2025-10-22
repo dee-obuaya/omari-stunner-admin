@@ -3,13 +3,15 @@ import { useState } from 'react';
 const AddTabModal = ({submitNewTab, handleClose}) => {
     const [formInfo, setFormInfo] = useState({
         name: '',
-        label: ''
+        label: '',
+        active: false
     });
 
     const handleChange = (e) => {
         const {name, value} = e.target;
         if (name === 'name') setFormInfo({...formInfo, name: value})
         if (name === 'label') setFormInfo({...formInfo, label: value})
+        if (name === 'active') setFormInfo({...formInfo, active: !formInfo.active})
     };
 
     const handleSubmit = async (e) => {
@@ -17,22 +19,18 @@ const AddTabModal = ({submitNewTab, handleClose}) => {
 
         submitNewTab({...formInfo});
 
-        setFormInfo({...formInfo,
-            name: '',
-            label: ''
-        });
-
-        document.getElementById('edit-tab-modal').close();
+        resetForm();
     };
 
     const resetForm = () => {
         setFormInfo({...formInfo,
             name: '',
-            label: ''
+            label: '',
+            active: false
         });
-        handleClose();
         document.getElementById('add-tab-modal').close();
-    }
+        handleClose();
+    };
 
     return (
         <dialog id='add-tab-modal' className='modal' onClose={resetForm}>
@@ -54,6 +52,15 @@ const AddTabModal = ({submitNewTab, handleClose}) => {
                         </legend>
                         <input type='text' name='label' value={`${formInfo.label}`} onChange={handleChange} className='input validator' placeholder='Tab Label' required title='Only letters' />
                         <div className='validator-hint'>Please enter the tab label</div>
+
+                        <legend className='fieldset-legend text-base'>Active Status</legend>
+                        <input
+                            type='checkbox'
+                            checked={formInfo.active}
+                            onChange={handleChange}
+                            name='active'
+                            className='toggle checked:border-green-950 checked:bg-success checked:text-success-content'
+                        />
                    </fieldset>
 
                     <button

@@ -3,13 +3,16 @@ import { useState } from 'react';
 const EditTabModal = ({tab, submitUpdatedTab, handleClose}) => {
     const [formInfo, setFormInfo] = useState({
         name: tab.name,
-        label: tab.label
+        label: tab.label,
+        active: tab.active
     });
 
     const handleChange = (e) => {
         const {name, value} = e.target;
-        if (name === 'name') setFormInfo({...formInfo, name: value})
-        if (name === 'label') setFormInfo({...formInfo, label: value})
+        if (name === 'name') setFormInfo({...formInfo, name: value});
+        if (name === 'label') setFormInfo({...formInfo, label: value});
+        if (name === 'active') setFormInfo({...formInfo, active: !formInfo.active});
+        console.log(formInfo);
     };
 
     const handleSubmit = async (e) => {
@@ -18,6 +21,7 @@ const EditTabModal = ({tab, submitUpdatedTab, handleClose}) => {
         submitUpdatedTab({...formInfo});
 
         document.getElementById('edit-tab-modal').close();
+        handleClose();
     };
 
     return (
@@ -38,8 +42,17 @@ const EditTabModal = ({tab, submitUpdatedTab, handleClose}) => {
                         <legend className='fieldset-legend text-base'>Tab Label
                             <span className='text-sm text-neutral-500/25 tracking-wide'>(how it will be displayed)</span>
                         </legend>
-                        <input type='text' name='label' value={formInfo.label}  className='input validator' placeholder='Tab Label'nChange={handleChange} required title='Only letters' />
+                        <input type='text' name='label' value={formInfo.label}  className='input validator' placeholder='Tab Label' onChange={handleChange} required title='Only letters' />
                         <div className="validator-hint">Please enter a tab label</div>
+
+                        <legend className='fieldset-legend text-base'>Active Status</legend>
+                        <input
+                            type='checkbox'
+                            checked={formInfo.active}
+                            onChange={handleChange}
+                            name='active'
+                            className='toggle checked:border-green-950 checked:bg-success checked:text-success-content'
+                        />
                     </fieldset>
 
                     <button

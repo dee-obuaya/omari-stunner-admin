@@ -22,6 +22,11 @@ const Tabs = () => {
     const columns = [
         { title: 'Name', dataId: 'name' },
         { title: 'Label', dataId: 'label' },
+        {title: 'Status', dataId: 'active', render: (tab) => {
+            return (
+                <div className='badge badge-soft badge-secondary h-fit'>{tab.row.original.active == true ? 'Active' : 'Not Active'}</div>
+            );
+        }},
         {title: 'Actions', dataId: 'actions', render: (tab) => {
             // console.log(tab);
             return (
@@ -90,9 +95,12 @@ const Tabs = () => {
     };
 
     const handleEditClick = (tab) => {
+        // console.log('Tab to edit: ', tab);
         setIsEditModalOpen(true);
         setTabToEdit({...tab});
-        setTimeout(() => document.getElementById('edit-tab-modal').showModal(), 200);
+        setTimeout(() => {
+            document.getElementById('edit-tab-modal').showModal()
+        }, 200);
     };
 
     const handleCloseModal = () => {
@@ -105,6 +113,7 @@ const Tabs = () => {
     };
 
     const handleDeleteClick = (tab) => {
+        // console.log('Tab to delete: ', tab);
         setTabToDelete({...tab});
         setTimeout(() => {
             deleteTab();
@@ -129,10 +138,11 @@ const Tabs = () => {
                 return;
             };
 
+            // console.log(data);
             if (data.tab) {
                 setAlert({type: 'success', message: data.message});
                 setShowAlert(true);
-                handleCloseModal();
+                // handleCloseModal();
                 getTabs();
             } else {
                 setAlert({type: 'error', message: 'Failed to add new tab.'});
@@ -151,6 +161,7 @@ const Tabs = () => {
     const editTab = async (data) => {
         formData.append('name', data.name);
         formData.append('label', data.label);
+        formData.append('active', data.active);
 
         try {
             const response = await fetch(`http://localhost:5000/api/tabs/${tabToEdit._id}`, {
@@ -158,7 +169,10 @@ const Tabs = () => {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams(formData).toString(),
             });
+
+            // console.log('response: ', response);
             const data = await response.json();
+            // console.log('data: ', data);
 
             if (!response.ok) {
                 setAlert({type: 'error', message: data.message|| data.statusText || 'Failed to update tab.'});
@@ -186,6 +200,7 @@ const Tabs = () => {
     }
 
     const deleteTab = async () => {
+        // console.log('Deleting tab: ', tabToDelete);
         try {
             const response = await fetch(`http://localhost:5000/api/tabs/${tabToDelete._id}`, {
                 method: 'DELETE',
