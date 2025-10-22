@@ -27,6 +27,7 @@ const Bookings = () => {
         {
             title: 'Client',
             dataId: 'clientName',
+            sort: true,
         },
         {
             title: 'Email',
@@ -49,6 +50,7 @@ const Bookings = () => {
         {
             title: 'Appointment Date',
             dataId: 'appointmentDate',
+            sort: true,
             render: (booking) => {
                 const date = new Date(booking.row.original.appointmentDate);
                 return (
@@ -84,6 +86,7 @@ const Bookings = () => {
         {
             title: 'Appointment Status',
             dataId: 'status',
+            filter: ['All', 'Pending', 'Confirmed', 'Completed', 'Canceled', 'Moved'],
             render: (booking) => {
                 return (
                     <div className={`badge badge-soft ${
@@ -185,17 +188,18 @@ const Bookings = () => {
         };
     }, []);
 
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentItems = bookings?.slice(startIndex, endIndex);
 
     const getBookings = async () => {
         setLoading(true);
         try {
             const res = await fetch('http://localhost:5000/api/bookings');
             const data = await res.json();
+
             if (res.ok) {
                 setBookings(data.bookings);
+            } else {
+                setAlert({ type: 'error', message: data.message || 'Failed to fetch bookings.' });
+                setShowAlert(true);
             }
 
             // setTimeout(() => {
@@ -416,12 +420,9 @@ const Bookings = () => {
 
                     <Table
                         columns={columns}
-                        dataSource={currentItems}
+                        dataSource={bookings}
                         pagination={{
                             totalItems: bookings?.length,
-                            itemsPerPage: itemsPerPage,
-                            currentPage: currentPage,
-                            onPageChange: setCurrentPage
                         }}
                     />
 
