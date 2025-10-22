@@ -11,11 +11,11 @@ const Services = () => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
+    // const [currentPage, setCurrentPage] = useState(1);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [serviceToDelete, setServiceToDelete] = useState({});
-    const itemsPerPage = 10;
+    // const itemsPerPage = 10;
     const [serviceToEdit, setServiceToEdit] = useState({});
     const [alert, setAlert] = useState({ type: '', message: '' });
     const [showAlert, setShowAlert] = useState(false);
@@ -86,15 +86,21 @@ const Services = () => {
         };
     }, []);
 
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentItems = services.slice(startIndex, endIndex);
+    // const startIndex = (currentPage - 1) * itemsPerPage;
+    // const endIndex = startIndex + itemsPerPage;
+    // const currentItems = services.slice(startIndex, endIndex);
 
     const getServices = async () => {
         try {
             const response = await fetch('http://localhost:5000/api/services');
             const data = await response.json();
-            setServices(data);
+
+            if (response.ok) {
+                setServices(data);
+            } else {
+                setAlert({ type: 'error', message: data.message || 'Failed to fetch services.' });
+                setShowAlert(true);
+            }
         } catch (error) {
             console.error('Error fetching services:', error);
         }
@@ -271,12 +277,12 @@ const Services = () => {
 
                     <Table
                         columns={columns}
-                        dataSource={currentItems}
+                        dataSource={services}
                         pagination={{
                             totalItems: services.length,
-                            itemsPerPage: itemsPerPage,
-                            currentPage: currentPage,
-                            onPageChange: setCurrentPage
+                            // itemsPerPage: itemsPerPage,
+                            // currentPage: currentPage,
+                            // onPageChange: setCurrentPage
                         }}
                     />
 
