@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
-import MultiSelect from '../../../components/MultiSelect';
 import Loader from '../../../components/Loader';
 
 const AddImageModal = ({submitNewImage, handleClose}) => {
