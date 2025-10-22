@@ -22,11 +22,7 @@ const AddServiceModal = ({submitNewService}) => {
         // console.log({...formInfo})
         submitNewService({...formInfo});
 
-        setFormInfo({...formInfo,
-            service: '',
-            tag: '',
-            price: 0
-        });
+        resetForm();
 
         document.getElementById('add-service-modal').close();
     };
@@ -37,7 +33,7 @@ const AddServiceModal = ({submitNewService}) => {
             tag: '',
             price: 0
         })
-    }
+    };
 
     return (
         <dialog id='add-service-modal' className='modal' onClose={resetForm}>

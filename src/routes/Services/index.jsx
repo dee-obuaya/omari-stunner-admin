@@ -183,14 +183,15 @@ const Services = () => {
                 body:  new URLSearchParams(formData).toString(),
             });
 
+            const response = await res.json();
+
             if (!res.ok) {
                 // console.log(res);
-                setAlert({ type: 'error', message: res.json().statusText });
+                setAlert({ type: 'error', message: response.statusText || response.message });
                 setShowAlert(true);
                 return;
             };
 
-            const response = await res.json();
 
             if (response.service) {
                 setAlert({type: 'success', message: `${response.service} service updated successfully!`});
