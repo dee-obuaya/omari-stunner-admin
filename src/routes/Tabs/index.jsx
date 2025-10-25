@@ -256,7 +256,7 @@ const Tabs = () => {
                         </button>
                     </div>
 
-                    <Table loading={loading} columns={columns} dataSource={tabs} />
+                    <Table loading={loading} columns={columns} dataSource={tabs} tableKey='tabs' />
 
                     {isAddModalOpen && <AddTabModal submitNewTab={addNewTab} handleClose={handleCloseModal} />}
                     {isEditModalOpen && <EditTabModal tab={tabToEdit} submitUpdatedTab={editTab} handleClose={handleCloseModal} />}
