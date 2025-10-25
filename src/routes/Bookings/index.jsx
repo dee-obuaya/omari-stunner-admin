@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, {useEffect, useState} from 'react';
+import {motion, AnimatePresence} from 'motion/react';
 import AddBookingModal from './AddBookingModal';
 import EditBookingModal from './EditBookingModal';
 import ImportBookingModal from './ImportBookingModal';
@@ -13,14 +14,12 @@ const Bookings = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(false);
     const [visible, setVisible] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [alert, setAlert] = useState({ type: '', message: '', visible: false });
     const [showAlert, setShowAlert] = useState(false);
-    const itemsPerPage = 10;
     const formData = new FormData();
 
     const columns = [
@@ -103,6 +102,7 @@ const Bookings = () => {
         {
             title: 'Payment Status',
             dataId: 'paymentStatus',
+            filter: ['All', 'Not Paid', 'Partial', 'Pending Confirmation', 'Paid'],
             render: (booking) => {
                 return (
                     <div className={`badge badge-soft ${
@@ -381,55 +381,63 @@ const Bookings = () => {
             <>
                 {showAlert && <Alert type={alert.type} message={alert.message} />}
 
-                <div className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14' : 'opacity-0'}`}>
-                    <div className='space-y-0.5 mb-4'>
-                        <h1 className='text-2xl font-semibold font-italiana uppercase tracking-widest'>Bookings</h1>
-                        <p className='text-base font-libertinus tracking-widest text-neutral-500'>Manage bookings</p>
-                    </div>
-
-                    <div className='divider mt-0 mb-4'></div>
-
-                    <div className='flex justify-end mb-4'>
-                        <div className="dropdown dropdown-end">
-                            <div tabIndex={0} role="button" className="btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center">
-                                <SlPlus className='text-sm' /> New Booking
-                            </div>
-                            <ul tabIndex="-1" className="dropdown-content menu bg-accent rounded-md z-1 w-52 p-2 shadow-sm">
-                                <li className='text-accent-content hover:bg-base-300/20 hover:rounded-md'>
-                                    <a
-                                        onClick={()=>{
-                                            setIsAddModalOpen(true);
-                                            setTimeout(() => {
-                                                document.getElementById('add-booking-modal').showModal();
-                                            }, 200);
-                                        }}
-                                    >
-                                        Add Booking
-                                    </a>
-                                </li>
-                                <li className='text-accent-content hover:bg-base-300/20 hover:rounded-md' onClick={()=>document.getElementById('import-booking-modal').showModal()}><a>Import Bookings</a></li>
-                            </ul>
+                <AnimatePresence>
+                    <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                        className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14' : 'opacity-0'}`}
+                    >
+                        <div className='space-y-0.5 mb-4'>
+                            <h1 className='text-2xl font-semibold font-italiana uppercase tracking-widest'>Bookings</h1>
+                            <p className='text-base font-libertinus tracking-widest text-neutral-500'>Manage bookings</p>
                         </div>
-                        {/* <button
-                            className='btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center'
-                            onClick={()=>document.getElementById('add-booking-modal').showModal()}
-                        >
-                        <SlPlus className='text-sm' /> New Booking
-                        </button> */}
-                    </div>
 
-                    <Table
-                        columns={columns}
-                        dataSource={bookings}
-                        pagination={{
-                            totalItems: bookings?.length,
-                        }}
-                    />
+                        <div className='divider mt-0 mb-4'></div>
 
-                    {isAddModalOpen && <AddBookingModal submitNewBooking={createBooking} />}
-                    {isEditModalOpen && <EditBookingModal booking={selectedBooking} submitUpdatedBooking={editBooking} handleClose={handleCloseModal}/>}
+                        <div className='flex justify-end mb-4'>
+                            <div className='dropdown dropdown-end'>
+                                <div tabIndex={0} role='button' className='btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center'>
+                                    <SlPlus className='text-sm' /> New Booking
+                                </div>
+                                <ul tabIndex='-1' className='dropdown-content menu bg-accent rounded-md z-5 w-52 p-2 shadow-sm'>
+                                    <li className='text-accent-content hover:bg-base-300/20 hover:rounded-md'>
+                                        <a
+                                            onClick={()=>{
+                                                setIsAddModalOpen(true);
+                                                setTimeout(() => {
+                                                    document.getElementById('add-booking-modal').showModal();
+                                                }, 200);
+                                            }}
+                                        >
+                                            Add Booking
+                                        </a>
+                                    </li>
+                                    <li className='text-accent-content hover:bg-base-300/20 hover:rounded-md' onClick={()=>document.getElementById('import-booking-modal').showModal()}><a>Import Bookings</a></li>
+                                </ul>
+                            </div>
+                            {/* <button
+                                className='btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center'
+                                onClick={()=>document.getElementById('add-booking-modal').showModal()}
+                            >
+                            <SlPlus className='text-sm' /> New Booking
+                            </button> */}
+                        </div>
 
-                </div>
+                        <Table
+                            columns={columns}
+                            dataSource={bookings}
+                            pagination={{
+                                totalItems: bookings?.length,
+                            }}
+                            tableKey='bookings'
+                        />
+
+                        {isAddModalOpen && <AddBookingModal submitNewBooking={createBooking} />}
+                        {isEditModalOpen && <EditBookingModal booking={selectedBooking} submitUpdatedBooking={editBooking} handleClose={handleCloseModal}/>}
+
+                    </motion.div>
+                </AnimatePresence>
             </>
         )
     );

@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import Loader from '../../../components/Loader';
 
 const AddImageModal = ({submitNewImage, handleClose}) => {
@@ -63,7 +64,7 @@ const AddImageModal = ({submitNewImage, handleClose}) => {
     };
 
     return (
-        <dialog id='add-image-modal' className='modal' onClose={resetForm}>
+        <motion.dialog exit={{opacity: 0}} id='add-image-modal' className='modal' onClose={resetForm}>
             {loading ? (
                 <Loader size='lg' />
             ) : (
@@ -110,7 +111,7 @@ const AddImageModal = ({submitNewImage, handleClose}) => {
                     </form>
                 </div>
             )}
-        </dialog>
+        </motion.dialog>
     )
 };
 

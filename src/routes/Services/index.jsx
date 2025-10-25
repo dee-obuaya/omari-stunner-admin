@@ -1,4 +1,6 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
 import AddServiceModal from './AddServiceModal';
 import EditServiceModal from './EditServiceModal';
 import Loader from '../../components/Loader';
@@ -11,11 +13,9 @@ const Services = () => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
-    // const [currentPage, setCurrentPage] = useState(1);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [serviceToDelete, setServiceToDelete] = useState({});
-    // const itemsPerPage = 10;
     const [serviceToEdit, setServiceToEdit] = useState({});
     const [alert, setAlert] = useState({ type: '', message: '' });
     const [showAlert, setShowAlert] = useState(false);
@@ -40,7 +40,7 @@ const Services = () => {
             render: (service) => {
             // console.log(tab);
                 return (
-                    <div className='flex space-x-4'>
+                    <div className='flex space-x-4 justify-center'>
                         <button
                             className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
                             data-tip='Edit Service'
@@ -151,8 +151,8 @@ const Services = () => {
     };
 
     const handleEditClick = (serviceDetails) => {
-        setIsEditModalOpen(true);
         setServiceToEdit(serviceDetails);
+        setIsEditModalOpen(true);
         setTimeout(() => {
             document.getElementById('edit-service-modal').showModal();
         }, 200);
@@ -267,12 +267,20 @@ const Services = () => {
                     <div className='divider mt-0 mb-4'></div>
 
                     <div className='flex justify-end mb-4'>
-                        <button
+                        <motion.button
+                            whileHover={{
+                                scale: 0.95
+                            }}
                             className='btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center'
-                            onClick={()=>document.getElementById('add-service-modal').showModal()}
+                            onClick={()=> {
+                                setIsAddModalOpen(true);
+                                setTimeout(() => {
+                                    document.getElementById('add-service-modal').showModal();
+                                });
+                            }}
                         >
-                        <SlPlus className='text-sm' /> New Service
-                        </button>
+                            <SlPlus className='text-sm' /> New Service
+                        </motion.button>
                     </div>
 
                     <Table
@@ -284,6 +292,7 @@ const Services = () => {
                             // currentPage: currentPage,
                             // onPageChange: setCurrentPage
                         }}
+                        tableKey='services'
                     />
 
                     {isAddModalOpen && <AddServiceModal submitNewService={addNewService} />}

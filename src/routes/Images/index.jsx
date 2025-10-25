@@ -1,5 +1,7 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { transformationStringFromObject } from '@cloudinary/url-gen';
+import { motion, AnimatePresence } from 'motion/react';
 import { SlPlus, SlTrash } from 'react-icons/sl';
 import AddImageModal from './AddImageModal';
 import Loader from '../../components/Loader';
@@ -24,7 +26,7 @@ const Images = () => {
         {title: 'Image', dataId: 'image', render: (img) => {
             // console.log(img);
             return (
-                <div className='flex items-center gap-3'>
+                <div className='flex items-center justify-center justify-self-center space-x-4'>
                     <div className='avatar'>
                         <div className='mask mask-squircle h-16 w-16 md:h-28 md:w-28'>
                             <img
@@ -244,7 +246,9 @@ const Images = () => {
                         }}
                     />
 
-                    {isAddModalOpen && <AddImageModal submitNewImage={addNewImage} handleClose={handleCloseModal}/>}
+                    <AnimatePresence>
+                        {isAddModalOpen && <AddImageModal key='modal' submitNewImage={addNewImage} handleClose={handleCloseModal}/>}
+                    </AnimatePresence>
                 </div>
             </>
         )
