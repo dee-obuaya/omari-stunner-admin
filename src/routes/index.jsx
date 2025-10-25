@@ -35,21 +35,21 @@ export default function MainApp() {
     loading ? (
         <Loader size='xl' />
     ) : (
-            <div className={ `h-full flex flex-col transition-all ease-in duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={ `flex flex-col min-h-screen transition-all ease-in duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
                 {/* Header: name and navbar with tabs */}
-                <div id='header' className='sticky top-0 z-50 w-full shadow-md'>
+                <div id='header' className='sticky top-0 z-10 w-full shadow-md'>
                     <Header />
                 </div>
 
                 {/* Content */}
-                <div id='content' className=''>
+                <main id='content' className='grow overflow-y-auto'>
                     {/* The Outlet component renders the child routes */}
                     <Sidebar content={<Outlet />} />
                     {/* <Outlet /> */}
-                </div>
+                </main>
 
                 {/* Footer: copyright */}
-                <div id='footer' className='fixed bottom-0 z-50 w-full bg-base-100'>
+                <div id='footer' className='w-full bg-base-100'>
                     <Footer />
                 </div>
             </div>
