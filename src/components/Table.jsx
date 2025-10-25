@@ -1,16 +1,69 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowUp, ArrowDown, ListFilter } from 'lucide-react';
 import Pagination from './Pagination';
 import Loader from './Loader';
 
-const Table = ({columns, dataSource, pagination, loading=false}) => {
+const Table = ({columns, dataSource, pagination, loading=false, tableKey}) => {
     // console.log(dataSource);
-    const [sortConfig, setSortConfig] = useState({key: null, direction: null});
-    const [filters, setFilters] = useState({});
-    const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = pagination.itemsPerPage || 10;
+    const storageKey = `${tableKey}-table-state`;
+
+    const [sortConfig, setSortConfig] = useState(() => {
+        const savedState = sessionStorage.getItem(storageKey);
+        if(savedState) {
+            const { sortConfig } = JSON.parse(savedState);
+
+            return sortConfig || {key: null, direction: null};
+        }
+        return {key: null, direction: null};
+    });
+
+    const [filters, setFilters] = useState(() => {
+        const savedState = sessionStorage.getItem(storageKey);
+        if(savedState) {
+            const { filters } = JSON.parse(savedState);
+
+            return filters || {};
+        }
+        return {};
+    });
+
+    const [currentPage, setCurrentPage] = useState(() => {
+        const savedState = sessionStorage.getItem(storageKey);
+        if(savedState) {
+            const { currentPage } = JSON.parse(savedState);
+
+            return currentPage || 1;
+        }
+        return 1;
+    });
+
+    const itemsPerPage = pagination?.itemsPerPage || 10;
+
+    // useEffect(() => {
+    //     const savedState = sessionStorage.getItem(storageKey);
+    //     if(savedState) {
+    //         const { sortConfig, filters, currentPage } = JSON.parse(savedState);
+
+    //         if (sortConfig) setSortConfig(sortConfig);
+    //         if (filters) setFilters(filters);
+    //         if (currentPage) setCurrentPage(currentPage);
+    //     }
+    // }, [storageKey]);
+
+    useEffect(() => {
+        const stateToStore = {sortConfig, filters, currentPage}
+
+        sessionStorage.setItem(storageKey, JSON.stringify(stateToStore))
+    }, [sortConfig, filters, currentPage, storageKey]);
+
+    const handleClearFilters = () => {
+        setSortConfig({key: null, direction: null});
+        setFilters({});
+        setCurrentPage(1);
+        sessionStorage.removeItem(storageKey);
+    };
 
 
     const handleSort = (col) => {
@@ -44,31 +97,14 @@ const Table = ({columns, dataSource, pagination, loading=false}) => {
     }
 
     const sortedData = useMemo(() => {
-        // if (!Array.isArray(dataSource)) return [];
-        if (!sortConfig.key) return dataSource;
+        if (!dataSource) return [];
 
-        // const col = columns.find((c) => c.sort?.key === sortConfig.key);
-        // if (!col) return dataSource;
+        // 🔒 Safeguard against undefined sortConfig
+        if (!sortConfig || !sortConfig.key) return dataSource;
 
-        // const {key, order} = col.sort;
-        // const {direction} = sortConfig;
-
-        // let sorted;
-
-        // if (['latest', 'oldest'].includes(direction)) {
-        //     sorted = [...dataSource].sort((a,b) => {
-        //         const dateA = new Date(a[key]);
-        //         const dateB = new Date(b[key]);
-        //         return direction === 'latest' ? dateB - dateA : dateA - dateB;
-        //     });
-
-        //     return sorted;
-        // };
 
         // standard ascending/descending
         const sorted = [...dataSource].sort((a,b) => {
-            // if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
-            // if (a[key] > b[key]) return direction === 'asc' ? 1: -1;
             const aValue = a[sortConfig.key];
             const bValue = b[sortConfig.key];
 
@@ -81,18 +117,21 @@ const Table = ({columns, dataSource, pagination, loading=false}) => {
     }, [dataSource, sortConfig]);
 
     const filteredData = useMemo(() => {
-        let result = sortedData;
+        if (!sortedData) return [];
 
-        Object.entries(filters).forEach(([colKey, value]) => {
-            result = result.filter((item) => {
-                const cellValue = String(item[colKey] ?? '').toLowerCase().trim();
-                const filterValue = value.toLowerCase().trim();
+        // 🛡️ Defensive fix: ensure filters is always an object
+        const activeFilters = filters && typeof filters === 'object' ? filters : {};
 
-                return cellValue === filterValue;
-            });
+        // let result = sortedData;
+        let filtered = [...sortedData];
+
+        Object.entries(activeFilters).forEach(([colKey, value]) => {
+            if (value && value !== 'all') {
+                filtered = filtered.filter((item) => String(item[colKey]) === String(value));
+            }
         });
 
-        return result;
+        return filtered;
     }, [sortedData, filters])
 
     const paginatedData = useMemo(() => {
@@ -111,20 +150,22 @@ const Table = ({columns, dataSource, pagination, loading=false}) => {
     // console.log('paginateData length: ', paginatedData?.length)
 
     return (
-        <div className='overflow-x-auto h-96'>
+        <div className='overflow-x-auto h-96 border border-base-content/5 rounded-box shadow-2xl shadow-base-300'>
             <table className='table table-pin-rows bg-base-100 tracking-wider font-libertinus'>
                 {/* head */}
-                <thead>
+                <thead className='px-1'>
                     <tr>
                         {columns?.map((column) => (
                             <th
                                 key={column.dataId}
-                                className={`text-nowrap text-center ${column.sort && 'cursor-pointer select-none hover:bg-base-200 transition-all duration-200 '} ${sortConfig.key === column.dataId && 'bg-base-300'} ${column.filter && ' relative'}`}
+                                className={`text-nowrap text-center
+                                    ${column.sort && ' cursor-pointer select-none hover:bg-base-200 transition-all duration-200 '}
+                                    ${sortConfig?.key === column.dataId && ' bg-base-300'} ${column.filter && ' relative'}`}
                                 onClick={() => handleSort(column)}
                             >
                                 <div
                                     // whileTap={{ scale:0.95 }}
-                                    className='flex items-center gap-1'
+                                    className='flex items-center justify-center gap-1'
                                 >
                                     {column.title}
                                     {column.sort && (
@@ -167,7 +208,7 @@ const Table = ({columns, dataSource, pagination, loading=false}) => {
                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                                                     transition={{ duration: 0.2, ease: 'easeOut' }}
-                                                    className='dropdown-content absolute z-[1] menu p-2 shadow bg-base-100 rounded-box w-36'
+                                                    className='dropdown-content absolute z-1 menu p-2 shadow bg-base-100 rounded-box w-36'
                                                 >
                                                     {column.filter.map((option) => (
                                                     <li key={option}>
@@ -191,7 +232,7 @@ const Table = ({columns, dataSource, pagination, loading=false}) => {
                         ))}
                     </tr>
                 </thead>
-                <tbody>
+                <tbody className='px-1'>
                     {loading ? (
                         <tr>
                             <td colSpan={columns.length} className='text-center'>
