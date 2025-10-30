@@ -86,10 +86,6 @@ const Services = () => {
         };
     }, []);
 
-    // const startIndex = (currentPage - 1) * itemsPerPage;
-    // const endIndex = startIndex + itemsPerPage;
-    // const currentItems = services.slice(startIndex, endIndex);
-
     const getServices = async () => {
         try {
             const response = await fetch('http://localhost:5000/api/services');
