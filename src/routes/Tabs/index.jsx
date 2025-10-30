@@ -26,7 +26,11 @@ const Tabs = () => {
         { title: 'Label', dataId: 'label' },
         {title: 'Status', dataId: 'active', render: (tab) => {
             return (
-                <div className='badge badge-soft badge-secondary h-fit'>{tab.row.original.active == true ? 'Active' : 'Not Active'}</div>
+                <div
+                    className={`badge badge-soft h-fit ${tab.row.original.active == true ? 'badge-success' : 'badge-error'}`}
+                >
+                    {tab.row.original.active == true ? 'Active' : 'Not Active'}
+                </div>
             );
         }},
         {title: 'Actions', dataId: 'actions', render: (tab) => {

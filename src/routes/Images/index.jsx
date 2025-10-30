@@ -40,7 +40,7 @@ const Images = () => {
             );
         }},
         {title: 'Service', dataId: 'service', render: (img) => (
-                <div className='badge badge-soft badge-secondary h-fit'>{img.row.original.service.service}</div>
+                <div className='badge badge-soft badge-info h-fit'>{img.row.original.service.service}</div>
 
             )
         },

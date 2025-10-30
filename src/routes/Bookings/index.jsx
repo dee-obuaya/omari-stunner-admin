@@ -46,7 +46,7 @@ const Bookings = () => {
 			render: (booking) => {
 				// console.log(booking);
 				return (
-					<span>{booking.row.original.clientService.service}</span>
+					<span className='badge badge-soft badge-success'>{booking.row.original.clientService.service}</span>
 				);
 			},
 		},
