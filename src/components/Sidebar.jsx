@@ -68,7 +68,7 @@ export default function Sidebar(props) {
                 <label htmlFor='my-drawer' aria-label='close sidebar' className='drawer-overlay'></label>
 
                 <ul className='menu md:menu-md lg:menu-lg bg-base-200 text-base-content h-full w-52 p-4  font-semibold font-libertinus tracking-wider uppercase space-y-3.5'>
-                    <div className='flex items-center'>
+                    <div className='flex items-center dark:bg-neutral/25 rounded-sm'>
                         <img src='/images/os_logo_full.png' alt='Omari Stunner Makeup Artist' />
                     </div>
                     <div className='divider'></div>

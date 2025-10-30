@@ -9,6 +9,7 @@ const LineChartTrend = ({title, data}) => {
     const themeColors = useDaisyUIThemeColors();
     const [colors, setColors] = useState(themeColors);
     const [hoveredLegend, setHoveredLegend] = useState(null);
+    const [hasAnimated, setHasAnimated] = useState(false);
     const themeType = useTheme();
 
 
@@ -115,9 +116,10 @@ const LineChartTrend = ({title, data}) => {
                             strokeWidth={2}
                             dot={false}
                             activeDot={false}
-                            isAnimationActive={true}
+                            isAnimationActive={!hasAnimated}
                             animationDuration={1200}
                             animationEasing='ease-in-out'
+                            onAnimationEnd={() => setHasAnimated(true)}
                         />
                     </LineChart>
                 </ResponsiveContainer>
