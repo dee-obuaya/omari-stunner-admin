@@ -268,9 +268,10 @@ const Services = () => {
 
                     <div className='flex justify-end mb-4'>
                         <motion.button
-                            whileHover={{
-                                scale: 0.95
-                            }}
+                            initial={{scale: 0.9}}
+                            whileHover={{scale: 1}}
+                            whileTap={{scale: 0.85}}
+                            transition={{duration: 0.4, delay: 0.25, ease: [0, 0.71, 0.2, 1.01],}}
                             className='btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center'
                             onClick={()=> {
                                 setIsAddModalOpen(true);
@@ -288,9 +289,6 @@ const Services = () => {
                         dataSource={services}
                         pagination={{
                             totalItems: services.length,
-                            // itemsPerPage: itemsPerPage,
-                            // currentPage: currentPage,
-                            // onPageChange: setCurrentPage
                         }}
                         tableKey='services'
                     />

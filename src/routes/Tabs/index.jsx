@@ -1,4 +1,6 @@
+/* eslint-disable no-unused-vars */
 import React, {useState, useEffect} from 'react';
+import { motion } from 'motion/react';
 import AddTabModal from './AddTabModal';
 import EditTabModal from './EditTabModal';
 import Table from '../../components/Table';
@@ -245,7 +247,11 @@ const Tabs = () => {
                     <div className='divider mt-0 mb-4'></div>
 
                     <div className='flex justify-end mb-4'>
-                        <button
+                        <motion.button
+                            initial={{scale: 0.9}}
+                            whileHover={{scale: 1}}
+                            whileTap={{scale: 0.85}}
+                            transition={{duration: 0.4, delay: 0.25, ease: [0, 0.71, 0.2, 1.01],}}
                             className='btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center'
                             onClick={()=>{
                                 setIsAddModalOpen(true);
@@ -253,7 +259,7 @@ const Tabs = () => {
                             }}
                         >
                         <SlPlus className='text-sm' /> New Tab
-                        </button>
+                        </motion.button>
                     </div>
 
                     <Table loading={loading} columns={columns} dataSource={tabs} tableKey='tabs' />

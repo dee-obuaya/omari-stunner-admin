@@ -68,20 +68,20 @@ const AddImageModal = ({submitNewImage, handleClose}) => {
             {loading ? (
                 <Loader size='lg' />
             ) : (
-                <div className='modal-box' >
+                <div className='modal-box lg:max-w-3xl' >
                     <form method='dialog'>
                         {/* if there is a button in form, it will close the modal */}
                         <button className='btn btn-sm btn-circle btn-ghost absolute right-2 top-2'>✕</button>
                     </form>
 
-                    <form id='form' className='my-4 mx-5 md:mx-16 font-libertinus tracking-widest' method='post' encType='multipart/form-data' onSubmit={handleSubmit}>
+                    <form id='form' className='my-4 px-4 md:px-8 lg:px-0 lg:mx-auto font-libertinus tracking-widest' method='post' encType='multipart/form-data' onSubmit={handleSubmit}>
                         {/* <h3 className='font-bold text-lg mb-4'>Add New Image</h3> */}
-                        <fieldset className='fieldset gap-0'>
+                        <fieldset className='fieldset gap-0 lg:max-w-3/4 md:mx-auto lg:px-10'>
                             <legend className="fieldset-legend text-base">Pick a file</legend>
                             <input
                                 type="file"
                                 name="image"
-                                className="file-input file-input-ghost validator"
+                                className="file-input file-input-ghost validator w-full"
                                 onChange={handleFileChange}
                                 required
                                 title="Only .jpg, .png, .jpeg, .heic"
@@ -93,7 +93,7 @@ const AddImageModal = ({submitNewImage, handleClose}) => {
 
 
                             <legend className='fieldset-legend'>Service</legend>
-                            <select name='service' defaultValue='Pick a service' className='select validator' onChange={handleServiceChange} required>
+                            <select name='service' defaultValue='Pick a service' className='select validator w-full' onChange={handleServiceChange} required>
                                 <option disabled={true}>Pick a service</option>
                                 {services.map((svc, index) => {
                                     return <option key={index}>{svc.service}</option>

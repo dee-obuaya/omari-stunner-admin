@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { transformationStringFromObject } from '@cloudinary/url-gen';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { SlPlus, SlTrash } from 'react-icons/sl';
 import AddImageModal from './AddImageModal';
 import Loader from '../../components/Loader';
@@ -15,7 +15,6 @@ const Images = () => {
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
     const [alert, setAlert] = useState({ type: '', message: '' });
     const [showAlert, setShowAlert] = useState(false);
     const [imageToDelete, setImageToDelete] = useState({});
@@ -68,6 +67,7 @@ const Images = () => {
             );
         }}
     ];
+
     const transformation = transformationStringFromObject([
         {gravity: 'face', height: 112, width: 112, crop: 'thumb'}
     ])
@@ -86,10 +86,6 @@ const Images = () => {
             clearTimeout(visibilityTimer);
         };
     }, []);
-
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentImages = images?.slice(startIndex, endIndex);
 
     const fetchImages = async () => {
         try {
@@ -222,7 +218,11 @@ const Images = () => {
                     <div className='divider mt-0 mb-4'></div>
 
                     <div className='flex justify-end mb-4'>
-                        <button
+                        <motion.button
+                            initial={{scale: 0.9}}
+                            whileHover={{scale: 1}}
+                            whileTap={{scale: 0.85}}
+                            transition={{duration: 0.4, delay: 0.25, ease: [0, 0.71, 0.2, 1.01],}}
                             className='btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center'
                             onClick={()=>{
                                 setIsAddModalOpen(true);
@@ -232,23 +232,20 @@ const Images = () => {
                             }}
                         >
                         <SlPlus className='text-sm' /> New Image
-                        </button>
+                        </motion.button>
                     </div>
 
                     <Table
                         columns={columns}
-                        dataSource={currentImages}
+                        dataSource={images}
                         pagination={{
                             totalItems: images.length,
-                            itemsPerPage: itemsPerPage,
-                            currentPage: currentPage,
-                            onPageChange: setCurrentPage,
+                            itemsPerPage: itemsPerPage
                         }}
+                        tableKey='images'
                     />
 
-                    <AnimatePresence>
-                        {isAddModalOpen && <AddImageModal key='modal' submitNewImage={addNewImage} handleClose={handleCloseModal}/>}
-                    </AnimatePresence>
+                    {isAddModalOpen && <AddImageModal key='modal' submitNewImage={addNewImage} handleClose={handleCloseModal}/>}
                 </div>
             </>
         )

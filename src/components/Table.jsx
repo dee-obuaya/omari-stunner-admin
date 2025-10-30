@@ -41,17 +41,6 @@ const Table = ({columns, dataSource, pagination, loading=false, tableKey}) => {
 
     const itemsPerPage = pagination?.itemsPerPage || 10;
 
-    // useEffect(() => {
-    //     const savedState = sessionStorage.getItem(storageKey);
-    //     if(savedState) {
-    //         const { sortConfig, filters, currentPage } = JSON.parse(savedState);
-
-    //         if (sortConfig) setSortConfig(sortConfig);
-    //         if (filters) setFilters(filters);
-    //         if (currentPage) setCurrentPage(currentPage);
-    //     }
-    // }, [storageKey]);
-
     useEffect(() => {
         const stateToStore = {sortConfig, filters, currentPage}
 
@@ -150,7 +139,7 @@ const Table = ({columns, dataSource, pagination, loading=false, tableKey}) => {
     // console.log('paginateData length: ', paginatedData?.length)
 
     return (
-        <div className='overflow-x-auto h-96 border border-base-content/5 rounded-box shadow-2xl shadow-base-300'>
+        <div className='overflow-x-auto h-112 border border-base-content/5 rounded-box shadow-2xl shadow-base-300 mb-8'>
             <table className='table table-pin-rows bg-base-100 tracking-wider font-libertinus'>
                 {/* head */}
                 <thead className='px-1'>
@@ -158,7 +147,7 @@ const Table = ({columns, dataSource, pagination, loading=false, tableKey}) => {
                         {columns?.map((column) => (
                             <th
                                 key={column.dataId}
-                                className={`text-nowrap text-center
+                                className={`text-nowrap text-center text-lg tracking-widest font-libertinus
                                     ${column.sort && ' cursor-pointer select-none hover:bg-base-200 transition-all duration-200 '}
                                     ${sortConfig?.key === column.dataId && ' bg-base-300'} ${column.filter && ' relative'}`}
                                 onClick={() => handleSort(column)}
@@ -203,22 +192,22 @@ const Table = ({columns, dataSource, pagination, loading=false, tableKey}) => {
                                             </motion.div>
                                             <AnimatePresence>
                                                 <motion.ul
-                                                    tabIndex={0}
+                                                    tabIndex='-1'
                                                     initial={{ opacity: 0, y: -8, scale: 0.95 }}
                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                                                     transition={{ duration: 0.2, ease: 'easeOut' }}
-                                                    className='dropdown-content absolute z-1 menu p-2 shadow bg-base-100 rounded-box w-36'
+                                                    className='dropdown-content absolute z-3 menu p-2 shadow-sm bg-base-100 rounded-box w-36'
                                                 >
                                                     {column.filter.map((option) => (
-                                                    <li key={option}>
+                                                    <li key={option} onClick={() => document.activeElement.blur()}>
                                                         <button
                                                             onClick={() => handleFilter(column.dataId, option)}
                                                             className={`${
                                                                 filters[column.dataId] === option ? 'bg-primary text-primary-content' : ''
                                                             }`}
                                                         >
-                                                        {option}
+                                                            {option}
                                                         </button>
                                                     </li>
                                                     ))}
