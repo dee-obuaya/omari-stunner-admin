@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import 'cally';
 
-const AddBookingModal = ({submitNewBooking}) => {
+const AddBookingModal = ({submitNewBooking, handleClose}) => {
     const [bookingInfo, setBookingInfo] = useState({
         clientName: '',
         clientEmail: '',
@@ -45,7 +45,7 @@ const AddBookingModal = ({submitNewBooking}) => {
             downPayment: 'None',
             status: 'Pending',
             paymentStatus: 'Not Paid'
-        })
+        });
     };
 
     const getServices = async () => {
@@ -91,13 +91,19 @@ const AddBookingModal = ({submitNewBooking}) => {
         // console.log(typeof(bookingInfo));
         submitNewBooking({bookingInfo});
 
+        closeModal();
+    };
+
+    const closeModal = () => {
         resetForm();
 
         document.getElementById('add-booking-modal').close();
+
+        handleClose();
     };
 
     return (
-        <dialog id='add-booking-modal' className='modal' onClose={resetForm}>
+        <dialog id='add-booking-modal' className='modal' onClose={closeModal}>
             <div className='modal-box lg:max-w-3xl'>
                 <form method='dialog'>
                     {/* if there is a button in form, it will close the modal */}
