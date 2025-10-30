@@ -10,7 +10,7 @@ export default function Sidebar(props) {
     useEffect(() => {
         const currentActive = document.querySelector(activeMenu);
         currentActive?.classList.toggle('menu-active');
-    }, []);
+    }, [activeMenu]);
 
     const handleMenuClick = (e) => {
         const checkbox = document.getElementById('my-drawer');
@@ -66,41 +66,47 @@ export default function Sidebar(props) {
             </div>
             <div className='drawer-side'>
                 <label htmlFor='my-drawer' aria-label='close sidebar' className='drawer-overlay'></label>
-                <ul className='menu md:menu-md lg:menu-lg bg-base-200 text-base-content h-full w-52 p-4 pt-20 font-semibold font-libertinus tracking-wider uppercase space-y-3.5'>
+
+                <ul className='menu md:menu-md lg:menu-lg bg-base-200 text-base-content h-full w-52 p-4  font-semibold font-libertinus tracking-wider uppercase space-y-3.5'>
+                    <div className='flex items-center'>
+                        <img src='/images/os_logo_full.png' alt='Omari Stunner Makeup Artist' />
+                    </div>
+                    <div className='divider'></div>
+
                     {/* Sidebar content here */}
                     <li>
-                        <Link to='/admin/home' onClick={handleMenuClick} className='home flex items-center space-x-5'>
-                            <SlHome className='pb-0.5'/> Home
+                        <Link to='/admin/home' onClick={handleMenuClick} className='home flex items-center'>
+                            <SlHome className='pb-0.5 mr-3.5'/> Home
                         </Link>
                     </li>
                     <li>
-                        <Link to='/admin/services' onClick={handleMenuClick} className='services flex items-center space-x-5'>
-                            <SlSettings className='pb-0.5'/> Services
+                        <Link to='/admin/services' onClick={handleMenuClick} className='services flex items-center'>
+                            <SlSettings className='pb-0.5 mr-3.5'/> Services
                         </Link>
                     </li>
                     <li>
-                        <Link to='/admin/images' onClick={handleMenuClick} className='images flex items-center space-x-5'>
-                            <SlPicture className='pb-0.5'/>Images
+                        <Link to='/admin/images' onClick={handleMenuClick} className='images flex items-center'>
+                            <SlPicture className='pb-0.5 mr-3.5'/>Images
                         </Link>
                     </li>
                     <li>
-                        <Link to='/admin/tabs' onClick={handleMenuClick} className='tabs flex items-center space-x-5'>
-                            <SlDirection className='pb-0.5'/>Tabs
+                        <Link to='/admin/tabs' onClick={handleMenuClick} className='tabs flex items-center'>
+                            <SlDirection className='pb-0.5 mr-3.5'/>Tabs
                         </Link>
                     </li>
                     <li>
-                        <Link to='/admin/bookings' onClick={handleMenuClick} className='bookings flex items-center space-x-5'>
-                            <SlNotebook className='pb-0.5'/>Bookings
+                        <Link to='/admin/bookings' onClick={handleMenuClick} className='bookings flex items-center'>
+                            <SlNotebook className='pb-0.5 mr-3.5'/>Bookings
                         </Link>
                     </li>
                     <li>
-                        <Link to='/admin/messages' onClick={handleMenuClick} className='messages flex items-center space-x-5'>
-                            <SlDrawer className='pb-0.5'/>Messages
+                        <Link to='/admin/messages' onClick={handleMenuClick} className='messages flex items-center'>
+                            <SlDrawer className='pb-0.5 mr-3.5'/>Messages
                         </Link>
                     </li>
                     <li>
-                        <Link to='/admin/users' onClick={handleMenuClick} className='users flex items-center space-x-5'>
-                            <SlUser className='pb-0.5'/>Users
+                        <Link to='/admin/users' onClick={handleMenuClick} className='users flex items-center'>
+                            <SlUser className='pb-0.5 mr-3.5'/>Users
                         </Link>
                     </li>
                 </ul>
