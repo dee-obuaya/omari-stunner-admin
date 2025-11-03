@@ -56,7 +56,7 @@ const Images = () => {
                                 <SlTrash className='text-lg' />
                             </button>
                         }
-                        title='Delete Service'
+                        title='Delete Image'
                         message={`Are you sure you want to delete this image? This action cannot be undone.`}
                         confirmText='Yes, Delete'
                         cancelText='Cancel'

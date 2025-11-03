@@ -165,7 +165,7 @@ const Bookings = () => {
 					<div className='flex space-x-4'>
 						<button
 							className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
-							data-tip='Edit Service'
+							data-tip='Edit Booking'
 							onClick={() =>
 								handleEditClick(booking.row.original)
 							}>
@@ -176,7 +176,7 @@ const Bookings = () => {
 							trigger={
 								<button
 									className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
-									data-tip='Delete Service'>
+									data-tip='Delete Booking'>
 									<SlTrash className='text-lg' />
 								</button>
 							}
@@ -366,7 +366,7 @@ const Bookings = () => {
 					type: 'success',
 					message:
 						response.message ||
-						`${response.booking.name}'s booking update successfully!`,
+						`${response.booking.name}'s booking updated successfully!`,
 				});
 				setShowAlert(true);
 			} else {
@@ -413,7 +413,7 @@ const Bookings = () => {
 				getBookings();
 			}
 		} catch (error) {
-			console.error('Error deleting service:', error);
+			console.error('Error deleting booking:', error);
 			setAlert({ type: 'error', message: `Error: ${error}` });
 			setShowAlert(true);
 		} finally {
