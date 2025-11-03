@@ -12,7 +12,7 @@ const EditTabModal = ({tab, submitUpdatedTab, handleClose}) => {
         if (name === 'name') setFormInfo({...formInfo, name: value});
         if (name === 'label') setFormInfo({...formInfo, label: value});
         if (name === 'active') setFormInfo({...formInfo, active: !formInfo.active});
-        console.log(formInfo);
+        // console.log(formInfo);
     };
 
     const handleSubmit = async (e) => {

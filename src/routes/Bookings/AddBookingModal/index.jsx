@@ -80,9 +80,9 @@ const AddBookingModal = ({submitNewBooking, handleClose}) => {
         if (name === 'booking[touchupRequired]') setBookingInfo({...bookingInfo, touchupRequired: value });
         if (name === 'booking[downPayment]') setBookingInfo({...bookingInfo, downPayment: value });
 
-        setTimeout(() => {
-            console.log(bookingInfo.touchUpRequired);
-        }, 200);
+        // setTimeout(() => {
+        //     console.log(bookingInfo.touchUpRequired);
+        // }, 200);
     };
 
     const handleSubmit = async (e) => {

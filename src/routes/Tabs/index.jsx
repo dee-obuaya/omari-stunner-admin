@@ -88,7 +88,6 @@ const Tabs = () => {
             if (response.ok) {
                 const data = await response.json();
                 setTabs(data);
-                setLoading(false);
             };
         } catch (error) {
             console.error('Error fetching tabs:', error);
