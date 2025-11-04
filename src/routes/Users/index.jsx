@@ -77,11 +77,11 @@ const Users = () => {
             const response = await fetch('http://localhost:5000/api/users');
             if (response.ok) {
                 const data = await response.json();
-                setUsers(data);
+                setUsers(data.users);
             };
         } catch (error) {
-            console.error('Error fetching tabs:', error);
-            setAlert({type: 'error', message: 'Failed to fetch tabs.'});
+            console.error('Error fetching users:', error);
+            setAlert({type: 'error', message: 'Failed to fetch users.'});
             setShowAlert(true);
         } finally {
             setLoading(false);
@@ -99,7 +99,9 @@ const Users = () => {
 
     const handleDeleteClick = user => {
         setSelected({...user});
-        setTimeout(() => {}, 200);
+        setTimeout(() => {
+            deleteUser();
+        }, 200);
     };
 
     const handleCloseModal = () => {
@@ -120,7 +122,7 @@ const Users = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ user: data.userInfo})
+                body: JSON.stringify({ user: data.userDetails})
             })
 
             const response = await res.json();
@@ -132,7 +134,7 @@ const Users = () => {
 					message:
 						response.statusText ||
 						response.message ||
-						'Failed to create booking.',
+						'Failed to create user.',
 				});
 				setShowAlert(true);
 				return;
@@ -171,7 +173,7 @@ const Users = () => {
 					headers: {
 						'Content-Type': 'application/json',
 					},
-					body: JSON.stringify({ user: data.userInfo }),
+					body: JSON.stringify({ user: data.userDetails }),
 				}
 			);
 
