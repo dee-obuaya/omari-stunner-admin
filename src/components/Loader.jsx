@@ -1,5 +1,4 @@
-export default function Loader (props) {
-    const { size, tip } = props;
+export default function Loader ({ size, tip }) {
 
     const getLoader = loaderSize => {
         switch (loaderSize) {
