@@ -7,7 +7,9 @@ const EditUserModal = ({user, submitUpdatedUser, handleClose}) => {
         username: user.username,
         password: user.password,
         verifyPassword: user.password,
+        role: user. role
     });
+    const [passwordError, setPasswordError] = useState(false);
 
     const handleChange = e => {
         const {name, value} = e.target;
@@ -15,13 +17,22 @@ const EditUserModal = ({user, submitUpdatedUser, handleClose}) => {
         if (name === 'user[name]') setUserInfo({...userInfo, name: value});
         if (name === 'user[username]') setUserInfo({...userInfo, username: value});
         if (name === 'user[password]') setUserInfo({...userInfo, password: value});
-        if (name === 'user[verify-password]') setUserInfo({...userInfo, verifyPassword: value});
+        if (name === 'user[verify-password]') {
+            setUserInfo({...userInfo, verifyPassword: value});
+            if (userInfo.password !== value) setPasswordError(true)
+            if (userInfo.password === value && passwordError) setPasswordError(false);
+        };
+        if (name === 'user[role]') setUserInfo({...userInfo, role: value.toLowerCase()});
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        await submitUpdatedUser({userInfo});
+        const keyToDelete ='verifyPassword';
+
+        const {[keyToDelete]: _, ...userDetails} = userInfo
+
+        await submitUpdatedUser({userDetails});
 
         closeModal();
     };
@@ -59,6 +70,15 @@ const EditUserModal = ({user, submitUpdatedUser, handleClose}) => {
                         <legend className='fieldset-legend text-base'>Verify Password</legend>
                         <input type='text' name='user[verify-password]' value={userInfo.verifyPassword} onChange={handleChange} className='input validator w-full' placeholder='Enter password again' required />
                         <div className='validator-hint'>Please enter user's password</div>
+                        {passwordError && <div className='text-error'>Passwords do not match</div>}
+
+                        <legend className='fieldset-legend text-base'>Role</legend>
+                        <select name='user[role]' defaultValue='None' className='select validator w-full' onChange={handleChange} required>
+                            <option disabled={true}>None</option>
+                            <option key={1}>Admin</option>
+                            <option key={2}>Employee</option>
+                        </select>
+                        <div className='validator-hint'>Please select user's role</div>
                    </fieldset>
 
                     <button
