@@ -213,7 +213,7 @@ const Bookings = () => {
 	const getBookings = async () => {
 		setLoading(true);
 		try {
-			const res = await fetch('http://localhost:5000/api/bookings');
+			const res = await fetch('http://localhost:5000/api/bookings', {credentials: 'include'});
 			const data = await res.json();
 
 			if (res.ok) {
@@ -286,6 +286,7 @@ const Bookings = () => {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({ booking: data.bookingInfo }),
+                credentials: 'include',
 			});
 
 			const response = await res.json();
@@ -343,6 +344,7 @@ const Bookings = () => {
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify({ booking: data.bookingInfo }),
+                    credentials: 'include',
 				}
 			);
 
@@ -395,6 +397,7 @@ const Bookings = () => {
 					headers: {
 						'Content-Type': 'application/json',
 					},
+                    credentials: 'include',
 				}
 			);
 

@@ -31,7 +31,7 @@ export default function Home() {
 	const getBookingsData = async () => {
 		setLoading(true);
 		try {
-			const res = await fetch('http://localhost:5000/api/dashboard/bookingsPerMonth');
+			const res = await fetch('http://localhost:5000/api/dashboard/bookingsPerMonth', {credentials: 'include'});
 			const response = await res.json();
 
 			if (res.ok) {
@@ -48,7 +48,7 @@ export default function Home() {
     const getBookedServiceData = async () => {
         setLoading(true);
 		try {
-			const res = await fetch('http://localhost:5000/api/dashboard/bookedServiceCount');
+			const res = await fetch('http://localhost:5000/api/dashboard/bookedServiceCount', {credentials: 'include'});
 			const response = await res.json();
 
 			if (res.ok) {
@@ -65,7 +65,7 @@ export default function Home() {
     const getStatistics = async () => {
         setLoading(true);
 		try {
-			const res = await fetch('http://localhost:5000/api/dashboard/statistics');
+			const res = await fetch('http://localhost:5000/api/dashboard/statistics', {credentials: 'include'});
 			const response = await res.json();
 
 			if (res.ok) {

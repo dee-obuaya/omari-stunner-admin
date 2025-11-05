@@ -88,7 +88,7 @@ const Services = () => {
 
     const getServices = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/services');
+            const response = await fetch('http://localhost:5000/api/services', {credentials: 'include'});
             const data = await response.json();
 
             if (response.ok) {
@@ -116,6 +116,7 @@ const Services = () => {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body:  new URLSearchParams(formData).toString(),
+                credentials: 'include',
             });
 
             if (!res.ok) {
@@ -183,6 +184,7 @@ const Services = () => {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body:  new URLSearchParams(formData).toString(),
+                credentials: 'include',
             });
 
             const response = await res.json();
@@ -222,6 +224,7 @@ const Services = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include'
             });
 
             const data = await response.json();

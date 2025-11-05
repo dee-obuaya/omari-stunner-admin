@@ -84,7 +84,7 @@ const Tabs = () => {
     const getTabs = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/tabs');
+            const response = await fetch('http://localhost:5000/api/tabs', {credentials: 'include'});
             if (response.ok) {
                 const data = await response.json();
                 setTabs(data);
@@ -134,6 +134,7 @@ const Tabs = () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams(formData).toString(),
+                credentials: 'include',
             });
             const data = await response.json();
 
@@ -173,6 +174,7 @@ const Tabs = () => {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams(formData).toString(),
+                credentials: 'include',
             });
 
             // console.log('response: ', response);
@@ -210,6 +212,7 @@ const Tabs = () => {
             const response = await fetch(`http://localhost:5000/api/tabs/${tabToDelete._id}`, {
                 method: 'DELETE',
                 headers: {'Content-Type': 'application/json'},
+                credentials: 'include',
             });
 
             const data = await response.json();

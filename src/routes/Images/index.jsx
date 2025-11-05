@@ -89,7 +89,7 @@ const Images = () => {
 
     const fetchImages = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/images');
+            const res = await fetch('http://localhost:5000/api/images', {credentials: 'include'});
 
             if (res.ok) {
                 const data = await res.json();
@@ -132,6 +132,7 @@ const Images = () => {
                 //     'Content-Type': 'multipart/form-data',
                 // },
                 body:  formData,
+                credentials: 'include',
             });
 
             const data = await res.json();
@@ -176,6 +177,7 @@ const Images = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
             });
 
             const data = await response.json();
