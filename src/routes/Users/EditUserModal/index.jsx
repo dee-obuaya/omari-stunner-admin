@@ -7,7 +7,7 @@ const EditUserModal = ({user, submitUpdatedUser, handleClose}) => {
         username: user.username,
         password: user.password,
         verifyPassword: user.password,
-        role: user. role
+        role: user.role
     });
     const [passwordError, setPasswordError] = useState(false);
 
@@ -73,7 +73,7 @@ const EditUserModal = ({user, submitUpdatedUser, handleClose}) => {
                         {passwordError && <div className='text-error'>Passwords do not match</div>}
 
                         <legend className='fieldset-legend text-base'>Role</legend>
-                        <select name='user[role]' defaultValue='None' className='select validator w-full' onChange={handleChange} required>
+                        <select name='user[role]' value={userInfo.role} className='select validator w-full' onChange={handleChange} required>
                             <option disabled={true}>None</option>
                             <option key={1}>Admin</option>
                             <option key={2}>Employee</option>
