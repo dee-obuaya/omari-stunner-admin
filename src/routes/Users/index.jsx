@@ -5,20 +5,21 @@ import AddUserModal from './AddUserModal';
 import EditUserModal from './EditUserModal';
 import Table from '../../components/Table';
 import { SlPlus, SlPencil, SlTrash } from 'react-icons/sl';
-import Alert from '../../components/Alert';
+// import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import ConfirmPopup from '../../components/ConfirmPopup';
+import { useAlert } from '../../contexts/AlertContext';
 
 const Users = () => {
     const [loading, setLoading] = useState(false);
     const [visible, setVisible] = useState(false);
     const [users, setUsers] = useState([]);
-    const [alert, setAlert] = useState({type: '', message: ''});
-    const [showAlert, setShowAlert] = useState(false);
+    // const [alert, setAlert] = useState({type: '', message: ''});
+    // const [revealAlert, setRevealAlert] = useState(false);
     const [isAddModalOpen,setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selected, setSelected] = useState({});
-    const formData = new FormData();
+    const {showAlert, hideAlert} = useAlert();
 
     const columns = [
         {title: 'Name', dataId: 'name'},
@@ -74,18 +75,19 @@ const Users = () => {
     const getUsers = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/users');
+            const response = await fetch('http://localhost:5000/api/users', {credentials: 'include'});
             if (response.ok) {
                 const data = await response.json();
                 setUsers(data.users);
             };
         } catch (error) {
             console.error('Error fetching users:', error);
-            setAlert({type: 'error', message: 'Failed to fetch users.'});
-            setShowAlert(true);
+            showAlert({type: 'error', message:'Failed to fetch users.'});
+            // setAlert({type: 'error', message: 'Failed to fetch users.'});
+            // setRevealAlert(true);
         } finally {
             setLoading(false);
-            setTimeout(() => setShowAlert(false), 3000);
+            setTimeout(() => hideAlert(), 3000);
         };
     };
 
@@ -93,7 +95,7 @@ const Users = () => {
         setSelected({...user});
         setIsEditModalOpen(true);
         setTimeout(() => {
-            document.getElementById('edit-service-modal').showModal();
+            document.getElementById('edit-user-modal').showModal();
         }, 200);
     };
 
@@ -122,45 +124,44 @@ const Users = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ user: data.userDetails})
+                body: JSON.stringify({ user: data.userDetails}),
+                credentials: 'include',
             })
 
             const response = await res.json();
 
             if (!res.ok) {
 				console.log('response: ', response);
-				setAlert({
+				showAlert({
 					type: 'error',
 					message:
 						response.statusText ||
 						response.message ||
 						'Failed to create user.',
 				});
-				setShowAlert(true);
+				// setRevealAlert(true);
 				return;
             }
 
 			if (response.user) {
-				setAlert({
+				showAlert({
 					type: 'success',
 					message:
 						response.message ||
 						`${response.user.name}'s credentials created successfully!`,
 				});
-				setShowAlert(true);
+				// setRevealAlert(true);
 			} else {
-				setAlert({ type: 'error', message: response.message });
-				setShowAlert(true);
+				showAlert({ type: 'error', message: response.message });
+				// setRevealAlert(true);
 			}
         } catch (error) {
 			console.error('Error:', error);
-			setAlert({ type: 'error', message: `Error: ${error.message}` });
-			setShowAlert(true);
+			showAlert({ type: 'error', message: `Error: ${error.message}` });
+			// setRevealAlert(true);
 		} finally {
-			setTimeout(() => {
-				setShowAlert(false);
-			}, 5000);
 			getUsers();
+			hideAlert();
 		}
     };
 
@@ -174,6 +175,7 @@ const Users = () => {
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify({ user: data.userDetails }),
+                    credentials: 'include',
 				}
 			);
 
@@ -181,38 +183,39 @@ const Users = () => {
 
 			if (!res?.ok) {
 				console.log('response: ', response);
-				setAlert({
+				showAlert({
 					type: 'error',
 					message:
 						response.statusText ||
 						response.message ||
 						'Failed to update credentials.',
 				});
-				setShowAlert(true);
+				// setRevealAlert(true);
 				return;
 			}
 
 			if (response?.user) {
-				setAlert({
+				showAlert({
 					type: 'success',
 					message:
 						response.message ||
 						`${response.booking.name}'s credentials updated successfully!`,
 				});
-				setShowAlert(true);
+				// setRevealAlert(true);
 			} else {
-				setAlert({ type: 'error', message: response.message });
-				setShowAlert(true);
+				showAlert({ type: 'error', message: response.message });
+				// setRevealAlert(true);
 			}
 		} catch (error) {
 			console.error('Error:', error);
-			setAlert({ type: 'error', message: `Error: ${error.message}` });
-			setShowAlert(true);
+			showAlert({ type: 'error', message: `Error: ${error.message}` });
+			// setRevealAlert(true);
 		} finally {
-			setTimeout(() => {
-				setShowAlert(false);
-			}, 5000);
+			// setTimeout(() => {
+			// 	setRevealAlert(false);
+			// }, 5000);
 			getUsers();
+            hideAlert();
 		}
     };
 
@@ -225,31 +228,33 @@ const Users = () => {
 					headers: {
 						'Content-Type': 'application/json',
 					},
+                    credentials: 'include',
 				}
 			);
 
 			const data = await response.json();
 
 			if (!response.ok) {
-				setAlert({
+				showAlert({
 					type: 'error',
 					message: data.message || 'Failed to delete user.',
 				});
-				setShowAlert(true);
+				// setRevealAlert(true);
 				return;
 			} else {
-				setAlert({ type: 'success', message: data.message });
-				setShowAlert(true);
+				showAlert({ type: 'success', message: data.message });
+				// setRevealAlert(true);
 				getUsers();
 			}
 		} catch (error) {
 			console.error('Error deleting user:', error);
-			setAlert({ type: 'error', message: `Error: ${error}` });
-			setShowAlert(true);
+			showAlert({ type: 'error', message: `Error: ${error}` });
+			// setRevealAlert(true);
 		} finally {
-			setTimeout(() => {
-				setShowAlert(false);
-			}, 5000);
+			// setTimeout(() => {
+			// 	setRevealAlert(false);
+			// }, 5000);
+            hideAlert();
 		}
     };
 
@@ -257,7 +262,7 @@ const Users = () => {
         <Loader size='xl' />
     ) : (
         <>
-            {showAlert && <Alert type={alert.type} message={alert.message} />}
+            {/* {revealAlert && <Alert type={alert.type} message={alert.message} />} */}
 
             <div
                 className={`transition-all ease-initial duration-700 ${
