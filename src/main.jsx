@@ -15,7 +15,8 @@ import Services from './routes/Services'
 import Bookings from './routes/Bookings'
 import Users from './routes/Users'
 import Messages from './routes/Messages'
-import { AuthProvider } from './routes/AuthContext'
+import { AuthProvider } from './contexts/AuthContext'
+import { AlertProvider } from './contexts/AlertContext'
 
 
 const router = createBrowserRouter([
@@ -24,8 +25,12 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         children: [
             {
-            path: '/login',
-            element: <Login />
+                path: '/',
+                element: <Navigate to='/login' replace />,
+            },
+            {
+                path: '/login',
+                element: <Login />
             }
         ]
     },
@@ -82,8 +87,10 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
-        <AuthProvider>
-            <RouterProvider router={router} />
-        </AuthProvider>
+        <AlertProvider>
+            <AuthProvider>
+                <RouterProvider router={router} />
+            </AuthProvider>
+        </AlertProvider>
     </StrictMode>,
 )
