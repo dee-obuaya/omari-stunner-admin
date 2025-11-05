@@ -5,6 +5,7 @@ import Loader from '../components/Loader';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
+import SessionManger from '../components/SessionManager';
 
 export default function MainApp() {
     const [loading, isLoading] = useState(true);
@@ -40,6 +41,8 @@ export default function MainApp() {
                 <div id='header' className='sticky top-0 z-10 w-full shadow-md'>
                     <Header />
                 </div>
+
+                <SessionManger />
 
                 {/* Content */}
                 <main id='content' className='grow overflow-y-auto'>
