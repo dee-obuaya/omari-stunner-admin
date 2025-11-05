@@ -1,7 +1,7 @@
-// PrivateRoute.js
+/* eslint-disable no-unused-vars */
 import React from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import Loader from '../components/Loader';
 
 const Protected = () => {
@@ -15,7 +15,8 @@ const Protected = () => {
     }
 
     if (!isAuthenticated) {
-        return <Navigate to='/login' state={{ from: location }} replace />;
+        return <Navigate to='/login' replace />;
+        // state={{ from: location.state?.from?.pathname }}
     }
 
     return <Outlet />;
