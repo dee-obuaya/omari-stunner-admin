@@ -1,11 +1,14 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, usEffect, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { SlHome, SlSettings, SlPicture, SlDirection, SlNotebook, SlMenu, SlDrawer, SlUser } from "react-icons/sl";
+import { LogOut } from 'lucide-react';
 
 export default function Sidebar(props) {
     const {content} = props;
     const [activeMenu, setActiveMenu] = useState('home');
+    const {logout} = useAuth();
 
     useEffect(() => {
         const currentActive = document.querySelector(activeMenu);
@@ -52,6 +55,10 @@ export default function Sidebar(props) {
             default:
                 document.querySelector('.home')?.classList.toggle('menu-active');
         };
+    };
+
+    const handleSignout = () => {
+        logout();
     };
 
     return (
@@ -107,6 +114,12 @@ export default function Sidebar(props) {
                     <li>
                         <Link to='/admin/users' onClick={handleMenuClick} className='users flex items-center'>
                             <SlUser className='pb-0.5 mr-3.5'/>Users
+                        </Link>
+                    </li>
+
+                    <li className='fixed bottom-0'>
+                        <Link className='flex items-center text-base-content' onClick={handleSignout}>
+                            Sign Out <LogOut className='w-6 h-6 pb-0.5 ml-3.5' />
                         </Link>
                     </li>
                 </ul>
