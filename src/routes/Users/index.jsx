@@ -94,7 +94,6 @@ const Users = () => {
             // setRevealAlert(true);
         } finally {
             setLoading(false);
-            setTimeout(() => hideAlert(), 3000);
         };
     };
 
