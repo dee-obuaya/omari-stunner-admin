@@ -5,7 +5,7 @@ import Loader from '../components/Loader';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
-import SessionManger from '../components/SessionManager';
+import SessionManager from '../components/SessionManager';
 
 export default function MainApp() {
     const [loading, isLoading] = useState(true);
@@ -42,7 +42,7 @@ export default function MainApp() {
                     <Header />
                 </div>
 
-                <SessionManger />
+                <SessionManager />
 
                 {/* Content */}
                 <main id='content' className='grow overflow-y-auto'>
