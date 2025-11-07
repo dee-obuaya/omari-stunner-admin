@@ -32,16 +32,19 @@ export const AuthProvider = ({ children }) => {
             if (res.ok && data.user) {
                 setIsAuthenticated(true);
                 setUser(data.user);
-                scheduleAutoLogout(data.maxAge || (1000 * 60 * 5));
+                scheduleAutoLogout(data.maxAge);
                 localStorage.setItem('user', JSON.stringify(data.user));
+                return true;
             } else {
                 setIsAuthenticated(false);
                 setUser(null);
                 localStorage.removeItem('user');
+                return false
             }
         } catch (err) {
             console.error('Session check failed:', err);
             setIsAuthenticated(false);
+            return false;
         } finally {
             setLoading(false);
         }
@@ -99,7 +102,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout, loading, user, sessionExpiry }}>
+        <AuthContext.Provider value={{ isAuthenticated, login, logout, loading, user, sessionExpiry, checkSession }}>
             {children}
         </AuthContext.Provider>
     );
