@@ -4,22 +4,21 @@ import { motion } from 'motion/react';
 import AddUserModal from './AddUserModal';
 import EditUserModal from './EditUserModal';
 import Table from '../../components/Table';
-import { SlPlus, SlPencil, SlTrash } from 'react-icons/sl';
-// import Alert from '../../components/Alert';
+import { SlPlus, SlPencil, SlTrash, SlRefresh } from 'react-icons/sl';
 import Loader from '../../components/Loader';
 import ConfirmPopup from '../../components/ConfirmPopup';
 import { useAlert } from '../../contexts/AlertContext';
+import ResetPasswordModal from './ResetPasswordModal';
 
 const Users = () => {
     const [loading, setLoading] = useState(false);
     const [visible, setVisible] = useState(false);
     const [users, setUsers] = useState([]);
-    // const [alert, setAlert] = useState({type: '', message: ''});
-    // const [revealAlert, setRevealAlert] = useState(false);
     const [isAddModalOpen,setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [selected, setSelected] = useState({});
-    const {showAlert, hideAlert} = useAlert();
+    const {showAlert} = useAlert();
 
     const columns = [
         {title: 'Name', dataId: 'name'},
@@ -27,13 +26,21 @@ const Users = () => {
         {title: 'Actions', dataId: 'actions', render: (user) => {
             // console.log(tab);
             return (
-                <div className='flex space-x-4'>
+                <div className='flex justify-center space-x-4'>
                     <button
                         className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
                         data-tip='Edit User'
                         onClick={() => handleEditClick(user.row.original)}
                     >
                         <SlPencil className='text-lg' />
+                    </button>
+
+                    <button
+                        className='btn btn-ghost btn-xs sm:btn-sm md:btn-md lg:btn-lg p-2 tooltip tooltip-top'
+                        data-tip='Reset Password'
+                        onClick={() => handleResetPasswordClick(user.row.original)}
+                    >
+                        <SlRefresh className='text-lg' />
                     </button>
 
                     <ConfirmPopup
@@ -99,6 +106,14 @@ const Users = () => {
         }, 200);
     };
 
+    const handleResetPasswordClick = user => {
+        setSelected({...user});
+        setIsPasswordModalOpen(true);
+        setTimeout(() => {
+            document.getElementById('edit-password-modal').showModal();
+        }, 200);
+    }
+
     const handleDeleteClick = user => {
         setSelected({...user});
         setTimeout(() => {
@@ -139,7 +154,7 @@ const Users = () => {
 						response.message ||
 						'Failed to create user.',
 				});
-				// setRevealAlert(true);
+
 				return;
             }
 
@@ -150,18 +165,14 @@ const Users = () => {
 						response.message ||
 						`${response.user.name}'s credentials created successfully!`,
 				});
-				// setRevealAlert(true);
 			} else {
 				showAlert({ type: 'error', message: response.message });
-				// setRevealAlert(true);
 			}
         } catch (error) {
 			console.error('Error:', error);
 			showAlert({ type: 'error', message: `Error: ${error.message}` });
-			// setRevealAlert(true);
 		} finally {
 			getUsers();
-			hideAlert();
 		}
     };
 
@@ -209,15 +220,52 @@ const Users = () => {
 		} catch (error) {
 			console.error('Error:', error);
 			showAlert({ type: 'error', message: `Error: ${error.message}` });
-			// setRevealAlert(true);
 		} finally {
-			// setTimeout(() => {
-			// 	setRevealAlert(false);
-			// }, 5000);
 			getUsers();
-            hideAlert();
 		}
     };
+
+    const updatePassword = async (data) => {
+        try {
+			const res = await fetch(
+				`http://localhost:5000/api/users/reset-password/${selected._id}`,
+				{
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ user: data.userDetails }),
+                    credentials: 'include',
+				}
+			);
+
+			const response = await res.json();
+
+			if (!res?.ok) {
+				console.log('response: ', response);
+				showAlert({
+					type: 'error',
+					message:
+						response.statusText ||
+						response.message ||
+						'Failed to update password.',
+				});
+				return;
+			}
+
+			showAlert({
+				type: 'success',
+				message:
+					response.message ||
+					`Password updated successfully!`,
+			});
+		} catch (error) {
+			console.error('Error:', error);
+			showAlert({ type: 'error', message: `Error: ${error.message}` });
+		} finally {
+			getUsers();
+		}
+    }
 
     const deleteUser = async (data) => {
 		try {
@@ -317,6 +365,9 @@ const Users = () => {
                         submitUpdatedUser={editUser}
                         handleClose={handleCloseModal}
                     />
+                )}
+                {isPasswordModalOpen && (
+                    <ResetPasswordModal submitUpdatedPassword={updatePassword} handleClose={handleCloseModal} />
                 )}
             </div>
         </>
