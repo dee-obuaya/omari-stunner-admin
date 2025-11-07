@@ -54,6 +54,20 @@ export const AuthProvider = ({ children }) => {
         if (timeoutRef.current) clearTimeout(timeoutRef);
         if (!maxAge) return;
 
+        // Calculate the exact expiry
+        const expiryTime = Date.now() + maxAge;
+        setSessionExpiry(expiryTime);
+
+        // Show warning 1 minute before expiry (or configurable)
+        const warningTime = expiryTime - (1000 * 60); // 1 min before
+        const timeUntilWarning = warningTime - Date.now();
+
+        if (timeUntilWarning > 0) {
+            setTimeout(() => {
+                showAlert('info', 'Your session will expire in 1 minute. Save your work or refresh.');
+            }, timeUntilWarning);
+        }
+
         timeoutRef.current = setTimeout(() => {
             logout();
             showAlert('warning', 'Session expired. Please log in again.');
