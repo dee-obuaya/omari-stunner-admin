@@ -4,7 +4,6 @@ import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { LogIn } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-// import Alert from '../../components/Alert';
 import { useAlert } from '../../contexts/AlertContext';
 import Loader from '../../components/Loader';
 import ThemeToggler from '../../components/ThemeToggler'
@@ -13,9 +12,7 @@ const Login = () => {
     const {isAuthenticated, login} = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    // const [alert, setAlert] = useState({type: '', message: ''});
-    // const [showAlert, setShowAlert] = useState(false);
-    const {showAlert, hideAlert} = useAlert();
+    const {showAlert} = useAlert();
     const [loading, setLoading] = useState(false);
     const [visible, setVisible] = useState(false);
 
@@ -51,8 +48,6 @@ const Login = () => {
 
         const user = {username: username, password: password};
 
-        // console.log(location.state)
-        // const redirectTo = location.state?.from?.pathname || '/admin/home';
         const redirectTo = location.state?.from?.pathname || '/admin/home';
 
 
@@ -61,12 +56,9 @@ const Login = () => {
             navigate(redirectTo, {replace: true});
         } catch (e) {
             console.error(e);
-            // setAlert({type: 'error', message: 'Login failed'});
-            showAlert({type: 'warning', message: 'Login failed'})
-            // setShowAlert(true);
+            showAlert({type: 'warning', message: e.message || 'Login failed'})
         } finally {
             setLoading(false);
-            // setTimeout(() => setShowAlert(false), 10000)
         }
     };
 
