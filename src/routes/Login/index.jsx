@@ -64,7 +64,9 @@ const Login = () => {
 
     return (
         <>
-            <ThemeToggler />
+            <div className='sticky top-0 z-50'>
+                <ThemeToggler />
+            </div>
 
             <motion.div
                 initial={{scale: 0, opacity: 0}}
@@ -73,8 +75,15 @@ const Login = () => {
             >
                 {/* {showAlert && <Alert type={alert.type} message={alert.message} />} */}
 
-                <div className='card border border-base-300 w-fit justify-self-center self-center shadow-xl'>
-                    <div className='card-body'>
+                <div className='card lg:card-side border border-base-300 w-fit justify-self-center self-center shadow-xl'>
+                    <figure>
+                        <img
+                            className='w-52 h-52 lg:w-auto lg:h-auto'
+                            src='/images/os_logo_full.png'
+                            alt='Omari Stunner Makeup Artist Logo'
+                        />
+                    </figure>
+                    <div className='card-body justify-center'>
                         <h2 className='card-title text-xl font-italiana font-semibold tracking-wider lg:max-w-3/4 md:mx-auto lg:px-5'>Hi! Login to continue</h2>
                         <form id='form' className='my-4 px-4 md:px-8 lg:px-0 lg:mx-auto font-libertinus tracking-widest space-y-5' onSubmit={handleLogin}>
                             {/* <h3 className='font-bold text-lg mb-4'>Add New Service</h3> */}
@@ -84,7 +93,7 @@ const Login = () => {
                                 <div className='validator-hint'>Please enter username</div>
 
                                 <legend className='fieldset-legend text-base'>Password</legend>
-                                <input type='text' name='password' value={password} onChange={handleChange} className='input validator' placeholder='Password' required />
+                                <input type='password' name='password' value={password} onChange={handleChange} className='input validator' placeholder='Password' required />
                                 <div className='validator-hint'>Please enter password</div>
                             </fieldset>
 
