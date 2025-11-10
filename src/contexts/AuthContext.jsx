@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
     const [sessionExpiry, setSessionExpiry] = useState(null);
     const timeoutRef = useRef(null);
     const {showAlert} = useAlert();
+    const apiBaseUrl = import.meta.env.API_BASE_URL || 'http://localhost:5000'
 
     // 🪄 On mount, check localStorage
     useEffect(() => {
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    const checkSession = async() => {
+    const checkSession = async(silent=false, refreshIfValid=false) => {
         try {
             const res = await fetch('http://localhost:5000/auth/check', {
                 credentials: 'include'
@@ -34,6 +35,21 @@ export const AuthProvider = ({ children }) => {
                 setUser(data.user);
                 scheduleAutoLogout(data.maxAge);
                 localStorage.setItem('user', JSON.stringify(data.user));
+
+                // if refresh is requested, quietly ping '/auth/refresh' to extend the session
+                if (refreshIfValid) {
+                    try {
+                        const refreshRes = await fetch(`${apiBaseUrl}/auth/refresh`, { credentials: 'include' });
+                        const refreshData =await refreshRes.json();
+
+                        if (refreshRes.ok && refreshData.maxAge) {
+                            updateSessionExpiry(refreshData.maxAge);
+                        }
+                    } catch (refreshErr) {
+                        console.error('Session refresh failed: ', refreshErr);
+                    }
+                };
+
                 return true;
             } else {
                 setIsAuthenticated(false);
@@ -43,7 +59,7 @@ export const AuthProvider = ({ children }) => {
             }
         } catch (err) {
             console.error('Session check failed:', err);
-            setIsAuthenticated(false);
+            if (!silent) setIsAuthenticated(false);
             return false;
         } finally {
             setLoading(false);
@@ -115,8 +131,13 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const updateSessionExpiry = maxAge => {
+        if (!maxAge) return;
+        setSessionExpiry(Date.now() + maxAge);
+    }
+
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout, loading, user, sessionExpiry, checkSession }}>
+        <AuthContext.Provider value={{ isAuthenticated, login, logout, loading, user, sessionExpiry, checkSession, updateSessionExpiry }}>
             {children}
         </AuthContext.Provider>
     );

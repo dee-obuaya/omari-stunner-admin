@@ -1,33 +1,38 @@
 /* eslint-disable no-unused-vars */
-// hooks/useSessionMonitor.js
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAlert } from '../contexts/AlertContext';
 
-export default function useSessionMonitor(interval = 2 * 60 * 1000) {
-    const navigate = useNavigate();
+export default function useSessionMonitor() {
     const { showAlert } = useAlert();
-    const {isAuthenticated, checkSession, logout, sessionExpiry} = useAuth();
+    const {isAuthenticated, checkSession, logout} = useAuth();
+    const refreshTimer = useRef(null);
 
-    const checkAndRefresh = async () => {
+    const isDev = import.meta.env.MODE === 'development';
+
+    const logDev = (...args) => {
+        if (isDev) console.log('[SessionMonitor]', ...args);
+    }
+
+    const checkAndRefresh = async (reason='interval') => {
         try {
-            const valid = await checkSession();
+            logDev(`Checking session(${reason})...`)
+            const valid = await checkSession(true, true);
 
             if (!valid) {
-                showAlert({type: 'warning', message: 'Your session has expired.Please log in again.'});
+                logDev('Session expired - logging out');
+                showAlert({type: 'warning', message: 'Your session has expired. Please log in again.'});
                 logout(true);
                 return;
+            } else{
+                logDev('Session valid; refreshed successfully');
             }
-
-            // if session still valid, extend expiry silently
-            await fetch('http://localhost:5000/auth/refresh', {credentials: 'include'})
         } catch (e) {
             console.error('Session check/refresh failed: ', e);
         }
     };
 
-    function debounce(fn, delay) {
+    const debounce = (fn, delay) => {
         let timeout;
         return (...args) => {
             clearTimeout(timeout);
@@ -38,43 +43,27 @@ export default function useSessionMonitor(interval = 2 * 60 * 1000) {
     useEffect(() => {
         if (!isAuthenticated) return;
 
-        // Check on mount
-        checkSession();
+        let interval;
 
-        ['click', 'mousemove', 'keydown'].forEach(event => {
-            window.addEventListener(event, debounce(checkAndRefresh, 60000)); // once per minute
-        });
-
+        // run on mount and when tab regains focus
+        checkAndRefresh();
         window.addEventListener('focus', checkAndRefresh);
 
+        const debouncedRefresh = debounce(checkAndRefresh, 120000);
+        ['click', 'mousemove', 'keydown'].forEach(event =>
+            window.addEventListener(event, debouncedRefresh)
+        );
 
-        // // Then every few minutes
-        // const intervalId = setInterval(async () => {
-        //     const stillValid = await checkSession();
+        // check every 5 min
+        refreshTimer.current = setInterval(checkAndRefresh, 1000 * 60 * 5);
 
-        //     if (!stillValid) {
-        //         showAlert('warning', 'Your session has expired. Please log in again.');
-        //         logout(true);
-        //         navigate('/login');
-        //     } else {
-        //         console.log('Session refreshed');
-        //     }
-        // }, interval);
-
-        // // Also check when tab regains focus
-        // const handleFocus = async () => {
-        //     const stillValid = await checkSession();
-
-        //     if (!stillValid) {
-        //         showAlert('warning', 'Your session has expired. Please log in again.');
-        //         logout(true);
-        //         navigate('/login');
-        //     }
-        // };
 
         return () => {
-            // clearInterval(intervalId);
+            clearInterval(refreshTimer.current);
             window.removeEventListener('focus', checkAndRefresh);
+            ['click', 'mousemove', 'keydown'].forEach(event =>
+                window.removeEventListener(event, debouncedRefresh)
+            );
         };
-    }, [showAlert, logout, navigate, isAuthenticated, sessionExpiry, checkSession]);
+    }, []);
 }

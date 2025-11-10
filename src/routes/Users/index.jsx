@@ -56,7 +56,10 @@ const Users = () => {
                         message={`Are you sure you want to delete this user? This action cannot be undone.`}
                         confirmText='Yes, Delete'
                         cancelText='Cancel'
-                        onConfirm={() => handleDeleteClick(user.row.original)}
+                        onConfirm={() => {
+                            // handleDeleteClick(user.row.original)
+                            deleteUser(user.row.original._id)
+                        }}
                         canCancel={true}
                     />
                 </div>
@@ -113,12 +116,13 @@ const Users = () => {
         }, 200);
     }
 
-    const handleDeleteClick = user => {
-        setSelected({...user});
-        setTimeout(() => {
-            deleteUser();
-        }, 200);
-    };
+    // const handleDeleteClick = user => {
+    //     setSelected({...user});
+    //     setTimeout(() => {
+    //         console.log(selected);
+    //         // deleteUser();
+    //     }, 1000);
+    // };
 
     const handleCloseModal = () => {
         if (isAddModalOpen) {
@@ -162,7 +166,7 @@ const Users = () => {
 					type: 'success',
 					message:
 						response.message ||
-						`${response.user.name}'s credentials created successfully!`,
+						`${response.user}'s credentials created successfully!`,
 				});
 			} else {
 				showAlert({ type: 'error', message: response.message });
@@ -209,7 +213,7 @@ const Users = () => {
 					type: 'success',
 					message:
 						response.message ||
-						`${response.booking.name}'s credentials updated successfully!`,
+						`${response.user}'s credentials updated successfully!`,
 				});
 				// setRevealAlert(true);
 			} else {
@@ -266,10 +270,10 @@ const Users = () => {
 		}
     }
 
-    const deleteUser = async (data) => {
+    const deleteUser = async (userId) => {
 		try {
 			const response = await fetch(
-				`http://localhost:5000/api/bookings/${selected._id}`,
+				`http://localhost:5000/api/users/${userId}`,
 				{
 					method: 'DELETE',
 					headers: {
@@ -286,22 +290,14 @@ const Users = () => {
 					type: 'error',
 					message: data.message || 'Failed to delete user.',
 				});
-				// setRevealAlert(true);
 				return;
 			} else {
 				showAlert({ type: 'success', message: data.message });
-				// setRevealAlert(true);
 				getUsers();
 			}
 		} catch (error) {
 			console.error('Error deleting user:', error);
 			showAlert({ type: 'error', message: `Error: ${error}` });
-			// setRevealAlert(true);
-		} finally {
-			// setTimeout(() => {
-			// 	setRevealAlert(false);
-			// }, 5000);
-            hideAlert();
 		}
     };
 

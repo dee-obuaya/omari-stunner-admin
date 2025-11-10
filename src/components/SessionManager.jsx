@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAlert } from '../contexts/AlertContext';
@@ -10,31 +10,14 @@ export default function SessionManager()  {
     const { showAlert } = useAlert();
     const navigate = useNavigate();
     const location = useLocation();
+    const logoutTimer = useRef(null);
 
+    // hook handles session checks and refresh
     useSessionMonitor();
 
-    useEffect(() => {
-        // console.log('Session Manager here!');
-        if (!isAuthenticated || !sessionExpiry) return;
-        const remainingTime = sessionExpiry - Date.now();
-
-        if (remainingTime <= 0) {
-            endSession();
-            return;
-        }
-
-        // auto logout timer
-        const timer = setTimeout(() => {
-            endSession();
-        }, remainingTime);
-
-        return () => {
-            clearTimeout(timer);
-            // clearInterval(interval);
-        }
-    }, [showAlert, sessionExpiry, isAuthenticated, navigate, logout]);
-
     const endSession = () => {
+        if (!isAuthenticated) return;
+
         const currentPath = location.pathname;
 
         navigate('/login', {
@@ -47,7 +30,31 @@ export default function SessionManager()  {
         });
 
         logout(true);
+        showAlert({ type: 'warning', message: 'Your session expired. Please log in again' });
     };
+
+    useEffect(() => {
+        // console.log('Session Manager here!');
+        if (!isAuthenticated || !sessionExpiry) return;
+
+        // calculate remaining session time
+        const remainingTime = sessionExpiry - Date.now();
+
+        // if expired log out immediately
+        if (remainingTime <= 0) {
+            endSession();
+            return;
+        }
+
+        // auto logout timer
+        logoutTimer.current = setTimeout(() => {
+            endSession();
+        }, remainingTime);
+
+        return () => {
+            if (logoutTimer.current) clearTimeout(logoutTimer.current);
+        }
+    }, [sessionExpiry, isAuthenticated]);
 
     return null; // it's an invisible helper component
 };
