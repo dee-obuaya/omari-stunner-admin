@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import Loader from '../../components/Loader';
 import LineChartTrend from '../../components/LineChartTrend';
 import BarChartTrend from '../../components/BarChartTrend';
+import {useAuth} from '../../contexts/AuthContext';
 
 export default function Home() {
 	const [loading, setLoading] = useState(false);
@@ -11,6 +12,7 @@ export default function Home() {
 	const [groupedBookings, setGroupedBookings] = useState([]);
     const [bookedServices, setBookedServices] = useState([]);
     const [statistics, setStatistics] = useState({})
+    const {user} = useAuth();
 
 	useEffect(() => {
 		let visibilityTimer;
@@ -85,8 +87,12 @@ export default function Home() {
         ) :
         (
             <>
-                <div className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14' : 'opacity-0'}`}>
-                    <div className='px-8 md:p-4 mb-12'>
+                <div className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14 space-y-5' : 'opacity-0'}`}>
+                    <div>
+                        <p className='font-italiana font-extralight text-2xl tracking-widest'>Welcome Back, {user.name}</p>
+                    </div>
+
+                    <div className='px-8 md:p-4'>
                         <div className='stats stats-vertical shadow-md md:stats-horizontal w-full bg-base-300/20 text-base-content font-libertinus tracking-wider overflow-hidden'>
                             <div
                                 className='stat w-full md:w-auto'
@@ -199,7 +205,7 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <div className='space-y-4 md:space-y-12 lg:space-y-0 lg:flex gap-8'>
+                    <div className='space-y-4 md:space-y-12 lg:space-y-0 lg:flex lg:gap-8'>
                         <div className='shadow-md lg:w-1/2 rounded-box h-fit'>
                             <LineChartTrend title={`Booking Trend ${new Date().getFullYear()}`} data={groupedBookings} />
                         </div>
