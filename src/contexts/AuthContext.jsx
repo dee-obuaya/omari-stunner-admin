@@ -2,6 +2,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAlert } from './AlertContext';
+import { API_BASE_URL } from '../constants/ServerUrl';
 
 const AuthContext = createContext();
 
@@ -12,7 +13,6 @@ export const AuthProvider = ({ children }) => {
     const [sessionExpiry, setSessionExpiry] = useState(null);
     const timeoutRef = useRef(null);
     const {showAlert} = useAlert();
-    const apiBaseUrl = import.meta.env.API_BASE_URL || 'http://localhost:5000'
 
     // 🪄 On mount, check localStorage
     useEffect(() => {
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
 
     const checkSession = async(silent=false, refreshIfValid=false) => {
         try {
-            const res = await fetch('http://localhost:5000/auth/check', {
+            const res = await fetch(`${API_BASE_URL}/auth/check`, {
                 credentials: 'include'
             });
             const data = await res.json();
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
                 // if refresh is requested, quietly ping '/auth/refresh' to extend the session
                 if (refreshIfValid) {
                     try {
-                        const refreshRes = await fetch(`${apiBaseUrl}/auth/refresh`, { credentials: 'include' });
+                        const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, { credentials: 'include' });
                         const refreshData =await refreshRes.json();
 
                         if (refreshRes.ok && refreshData.maxAge) {
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const login = async (userData) => {
-        const res = await fetch('http://localhost:5000/auth/login', {
+        const res = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async (silent=false) => {
         try {
-            await fetch('http://localhost:5000/auth/logout', {
+            await fetch(`${API_BASE_URL}/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
             });

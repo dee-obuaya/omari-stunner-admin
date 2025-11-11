@@ -9,6 +9,7 @@ import Loader from '../../components/Loader';
 import ConfirmPopup from '../../components/ConfirmPopup';
 import { useAlert } from '../../contexts/AlertContext';
 import ResetPasswordModal from './ResetPasswordModal';
+import { API_BASE_URL } from '../../constants/ServerUrl';
 
 const Users = () => {
     const [loading, setLoading] = useState(false);
@@ -85,7 +86,7 @@ const Users = () => {
     const getUsers = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/users', {credentials: 'include'});
+            const response = await fetch(`${API_BASE_URL}/api/users`, {credentials: 'include'});
             if (response.ok) {
                 const data = await response.json();
                 setUsers(data.users);
@@ -137,7 +138,7 @@ const Users = () => {
         // formData.append('user', JSON.stringify(data.userInfo));
 
         try {
-            const res = await fetch('http://localhost:5000/api/users', {
+            const res = await fetch(`${API_BASE_URL}/api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -182,7 +183,7 @@ const Users = () => {
     const editUser = async (data) => {
         try {
 			const res = await fetch(
-				`http://localhost:5000/api/users/${selected._id}`,
+				`${API_BASE_URL}/api/users/${selected._id}`,
 				{
 					method: 'PUT',
 					headers: {
@@ -231,7 +232,7 @@ const Users = () => {
     const updatePassword = async (data) => {
         try {
 			const res = await fetch(
-				`http://localhost:5000/api/users/reset-password/${selected._id}`,
+				`${API_BASE_URL}/api/users/reset-password/${selected._id}`,
 				{
 					method: 'PUT',
 					headers: {
@@ -273,7 +274,7 @@ const Users = () => {
     const deleteUser = async (userId) => {
 		try {
 			const response = await fetch(
-				`http://localhost:5000/api/users/${userId}`,
+				`${API_BASE_URL}/api/users/${userId}`,
 				{
 					method: 'DELETE',
 					headers: {

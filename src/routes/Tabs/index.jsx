@@ -8,6 +8,7 @@ import { SlPlus, SlPencil, SlTrash } from 'react-icons/sl';
 import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import ConfirmPopup from '../../components/ConfirmPopup';
+import { API_BASE_URL } from '../../constants/ServerUrl';
 
 const Tabs = () => {
     const [loading, setLoading] = useState(false);
@@ -84,7 +85,7 @@ const Tabs = () => {
     const getTabs = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/tabs', {credentials: 'include'});
+            const response = await fetch(`${API_BASE_URL}/api/tabs`, {credentials: 'include'});
             if (response.ok) {
                 const data = await response.json();
                 setTabs(data);
@@ -130,7 +131,7 @@ const Tabs = () => {
         formData.append('label', data.label);
 
         try {
-            const response = await fetch('http://localhost:5000/api/tabs', {
+            const response = await fetch(`${API_BASE_URL}/api/tabs`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams(formData).toString(),
@@ -170,7 +171,7 @@ const Tabs = () => {
         formData.append('active', data.active);
 
         try {
-            const response = await fetch(`http://localhost:5000/api/tabs/${tabToEdit._id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/tabs/${tabToEdit._id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams(formData).toString(),
@@ -209,7 +210,7 @@ const Tabs = () => {
     const deleteTab = async () => {
         // console.log('Deleting tab: ', tabToDelete);
         try {
-            const response = await fetch(`http://localhost:5000/api/tabs/${tabToDelete._id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/tabs/${tabToDelete._id}`, {
                 method: 'DELETE',
                 headers: {'Content-Type': 'application/json'},
                 credentials: 'include',

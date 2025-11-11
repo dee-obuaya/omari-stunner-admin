@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
 import 'cally';
+import { API_BASE_URL } from '../../../constants/ServerUrl';
 
 const EditBookingModal = ({booking, submitUpdatedBooking, handleClose}) => {
     const [bookingInfo, setBookingInfo] = useState({
@@ -34,7 +35,7 @@ const EditBookingModal = ({booking, submitUpdatedBooking, handleClose}) => {
     const getServices = async () => {
         setLoading(true);
         try {
-            const res = await fetch('http://localhost:5000/api/services');
+            const res = await fetch(`${API_BASE_URL}/api/services`, {credentials: 'include'});
 
             if (res.ok) {
                 const data = await res.json();

@@ -8,6 +8,7 @@ import Table from '../../components/Table';
 import { SlPlus, SlPencil, SlTrash } from 'react-icons/sl';
 import Alert from '../../components/Alert';
 import ConfirmPopup from '../../components/ConfirmPopup';
+import { API_BASE_URL } from '../../constants/ServerUrl';
 
 const Services = () => {
     const [services, setServices] = useState([]);
@@ -88,7 +89,7 @@ const Services = () => {
 
     const getServices = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/services', {credentials: 'include'});
+            const response = await fetch(`${API_BASE_URL}/api/services`, {credentials: 'include'});
             const data = await response.json();
 
             if (response.ok) {
@@ -110,7 +111,7 @@ const Services = () => {
         formData.append('price', data.price);
 
         try {
-            const res = await fetch('http://localhost:5000/api/services', {
+            const res = await fetch(`${API_BASE_URL}/api/services`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -178,7 +179,7 @@ const Services = () => {
         formData.append('price', data.price)
 
         try {
-            const res = await fetch(`http://localhost:5000/api/services/${serviceToEdit._id}`, {
+            const res = await fetch(`${API_BASE_URL}/api/services/${serviceToEdit._id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -219,7 +220,7 @@ const Services = () => {
 
     const deleteService = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/services/${serviceToDelete._id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/services/${serviceToDelete._id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

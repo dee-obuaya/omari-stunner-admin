@@ -9,6 +9,7 @@ import Table from '../../components/Table';
 import Alert from '../../components/Alert';
 import ConfirmPopup from '../../components/ConfirmPopup';
 import cld from '../../utils/cloudinary';
+import { API_BASE_URL } from '../../constants/ServerUrl';
 
 const Images = () => {
     const [images, setImages] = useState([]);
@@ -89,7 +90,7 @@ const Images = () => {
 
     const fetchImages = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/images', {credentials: 'include'});
+            const res = await fetch(`${API_BASE_URL}/api/images`, {credentials: 'include'});
 
             if (res.ok) {
                 const data = await res.json();
@@ -126,7 +127,7 @@ const Images = () => {
         // console.log('form data:', ...formData);
 
         try {
-            const res = await fetch('http://localhost:5000/api/images', {
+            const res = await fetch(`${API_BASE_URL}/api/images`, {
                 method: 'POST',
                 // headers: {
                 //     'Content-Type': 'multipart/form-data',

@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useAlert } from '../../contexts/AlertContext';
 import Loader from '../../components/Loader';
 import ThemeToggler from '../../components/ThemeToggler'
+import { DASHBOARD } from '../../constants/ServerUrl';
 
 const Login = () => {
     const {isAuthenticated, login} = useAuth();
@@ -32,7 +33,7 @@ const Login = () => {
 
     // If user is already logged in, skip login page
     if (isAuthenticated) {
-        return <Navigate to='/admin/home' replace />;
+        return <Navigate to={DASHBOARD} replace />;
     }
 
     const handleChange = (e) => {
@@ -48,7 +49,7 @@ const Login = () => {
 
         const user = {username: username, password: password};
 
-        const redirectTo = location.state?.from?.pathname || '/admin/home';
+        const redirectTo = location.state?.from?.pathname || DASHBOARD;
 
 
         try {

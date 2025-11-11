@@ -9,6 +9,7 @@ import Table from '../../components/Table';
 import { SlPlus, SlPencil, SlTrash, SlDoc } from 'react-icons/sl';
 import Alert from '../../components/Alert';
 import ConfirmPopup from '../../components/ConfirmPopup';
+import { API_BASE_URL } from '../../constants/ServerUrl';
 
 const Bookings = () => {
 	const [bookings, setBookings] = useState([]);
@@ -280,7 +281,7 @@ const Bookings = () => {
 		// console.log(typeof(formData.get('booking')));
 
 		try {
-			const res = await fetch('http://localhost:5000/api/bookings', {
+			const res = await fetch(`${API_BASE_URL}/api/bookings`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -337,7 +338,7 @@ const Bookings = () => {
 
 		try {
 			const res = await fetch(
-				`http://localhost:5000/api/bookings/${selectedBooking._id}`,
+				`${API_BASE_URL}/api/bookings/${selectedBooking._id}`,
 				{
 					method: 'PUT',
 					headers: {
@@ -391,7 +392,7 @@ const Bookings = () => {
 		// console.log('deleting booking: ', selectedBooking._id);
 		try {
 			const response = await fetch(
-				`http://localhost:5000/api/bookings/${selectedBooking._id}`,
+				`${API_BASE_URL}/api/bookings/${selectedBooking._id}`,
 				{
 					method: 'DELETE',
 					headers: {

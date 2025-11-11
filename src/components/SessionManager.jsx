@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAlert } from '../contexts/AlertContext';
 import useSessionMonitor from '../hooks/useSessionMonitor';
+import { LOGIN_PAGE } from '../constants/ServerUrl';
 
 export default function SessionManager()  {
     const { logout, sessionExpiry, isAuthenticated } = useAuth();
@@ -20,7 +21,7 @@ export default function SessionManager()  {
 
         const currentPath = location.pathname;
 
-        navigate('/login', {
+        navigate(LOGIN_PAGE, {
             replace: true,
             state: {
                 from: {pathname: currentPath},

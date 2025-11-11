@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import Loader from '../../../components/Loader';
+import { API_BASE_URL } from '../../../constants/ServerUrl';
 
 const AddImageModal = ({submitNewImage, handleClose}) => {
     const [imageFile, setImageFile] = useState(null);
@@ -23,7 +24,7 @@ const AddImageModal = ({submitNewImage, handleClose}) => {
     const getServices = async () => {
         setLoading(true);
         try {
-            const res = await fetch('http://localhost:5000/api/services');
+            const res = await fetch(`${API_BASE_URL}/api/services`, {credentials: 'include'});
 
             if (res.ok) {
                 const data = await res.json();

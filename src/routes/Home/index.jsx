@@ -5,6 +5,7 @@ import Loader from '../../components/Loader';
 import LineChartTrend from '../../components/LineChartTrend';
 import BarChartTrend from '../../components/BarChartTrend';
 import {useAuth} from '../../contexts/AuthContext';
+import { API_BASE_URL } from '../../constants/ServerUrl';
 
 export default function Home() {
 	const [loading, setLoading] = useState(false);
@@ -33,7 +34,7 @@ export default function Home() {
 	const getBookingsData = async () => {
 		setLoading(true);
 		try {
-			const res = await fetch('http://localhost:5000/api/dashboard/bookingsPerMonth', {credentials: 'include'});
+			const res = await fetch(`${API_BASE_URL}/api/dashboard/bookingsPerMonth`, {credentials: 'include'});
 			const response = await res.json();
 
 			if (res.ok) {
@@ -50,7 +51,7 @@ export default function Home() {
     const getBookedServiceData = async () => {
         setLoading(true);
 		try {
-			const res = await fetch('http://localhost:5000/api/dashboard/bookedServiceCount', {credentials: 'include'});
+			const res = await fetch(`${API_BASE_URL}/api/dashboard/bookedServiceCount`, {credentials: 'include'});
 			const response = await res.json();
 
 			if (res.ok) {
@@ -67,7 +68,7 @@ export default function Home() {
     const getStatistics = async () => {
         setLoading(true);
 		try {
-			const res = await fetch('http://localhost:5000/api/dashboard/statistics', {credentials: 'include'});
+			const res = await fetch(`${API_BASE_URL}/api/dashboard/statistics`, {credentials: 'include'});
 			const response = await res.json();
 
 			if (res.ok) {
