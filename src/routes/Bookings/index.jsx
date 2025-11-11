@@ -214,7 +214,7 @@ const Bookings = () => {
 	const getBookings = async () => {
 		setLoading(true);
 		try {
-			const res = await fetch('http://localhost:5000/api/bookings', {credentials: 'include'});
+			const res = await fetch(`${API_BASE_URL}/api/bookings`, {credentials: 'include'});
 			const data = await res.json();
 
 			if (res.ok) {
