@@ -6,21 +6,21 @@ import { SlPlus, SlTrash } from 'react-icons/sl';
 import AddImageModal from './AddImageModal';
 import Loader from '../../components/Loader';
 import Table from '../../components/Table';
-import Alert from '../../components/Alert';
+import { useAlert } from '../../contexts/AlertContext';
 import ConfirmPopup from '../../components/ConfirmPopup';
 import cld from '../../utils/cloudinary';
 import { API_BASE_URL } from '../../constants/ServerUrl';
 
 const Images = () => {
     const [images, setImages] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [visible, setVisible] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [alert, setAlert] = useState({ type: '', message: '' });
-    const [showAlert, setShowAlert] = useState(false);
+    const {showAlert} = useAlert();
     const [imageToDelete, setImageToDelete] = useState({});
     const formData = new FormData();
-    const itemsPerPage = 10;
+    const [pagination, setPagination] = useState({ totalItems: 0, itemsPerPage: 10, currentPage: 1 });
+    const [filters, setFilters] = useState({});
 
     const columns = [
         {title: 'Image', dataId: 'image', render: (img) => {
@@ -40,7 +40,11 @@ const Images = () => {
                 </div>
             );
         }},
-        {title: 'Service', dataId: 'service', render: (img) => (
+        {
+            title: 'Service',
+            dataId: 'service',
+            filter: ['All', 'Makeup', 'Lashes', 'Brows'],
+            render: (img) => (
                 <div className='badge badge-soft badge-info h-fit'>{img.row.original.service.service}</div>
 
             )
@@ -88,12 +92,22 @@ const Images = () => {
         };
     }, []);
 
-    const fetchImages = async () => {
+    const fetchImages = async (page = pagination.currentPage, filterValues = filters) => {
+        setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/images`, {credentials: 'include'});
+            const params = new URLSearchParams();
+            params.set('page', page);
+            params.set('limit', pagination.itemsPerPage);
+
+            Object.entries(filterValues).forEach(([key, value]) => {
+                if (value && value !== 'All') params.set(key, value);
+            });
+
+
+            const res = await fetch(`${API_BASE_URL}/api/images?${params}`, {credentials: 'include'});
+            const data = await res.json();
 
             if (res.ok) {
-                const data = await res.json();
 
                 const transformedImages = data.map(img => {
                     const imageToTransform = cld.image(img.image.filename);
@@ -107,16 +121,19 @@ const Images = () => {
 
                 setImages(transformedImages);
                 // console.log(transformedImages)
+                setPagination(prev => ({
+                    ...prev,
+                    totalItems: data.pagination.totalItems,
+                    currentPage: data.pagination.currentPage
+                }));
+            }else {
+                showAlert({ type: 'error', message: data.message || 'Failed to fetch services.' });
             }
         } catch (error) {
             console.error('Error fetching images:', error);
-            setAlert({ type: 'error', message: error || 'Failed to fetch images.' });
-            setShowAlert(true);
+            showAlert({ type: 'error', message: error || 'Failed to fetch images.' });
         } finally {
             setLoading(false);
-            setTimeout(() => {
-                setShowAlert(false);
-            }, 5000);
         };
     };
 
@@ -139,23 +156,17 @@ const Images = () => {
             const data = await res.json();
 
             if (data.message) {
-                setAlert({ type: 'error', message: data.message });
-                setShowAlert(true);
+                showAlert({ type: 'error', message: data.message });
                 return
             };
 
             // console.log(data);
 
-            setAlert({type: 'success', message: `Image added successfully!`});
-            setShowAlert(true);
+            showAlert({type: 'success', message: `Image added successfully!`});
         } catch (error) {
             console.error('Error:', error);
-            setAlert({type: 'error', message: `Error: ${error.message}`});
-            setShowAlert(true);
+            showAlert({type: 'error', message: `Error: ${error.message}`});
         } finally {
-            setTimeout(() => {
-                setShowAlert(false);
-            }, 5000);
             fetchImages();
         };
     };
@@ -184,22 +195,16 @@ const Images = () => {
             const data = await response.json();
 
             if (!response.ok) {
-                setAlert({ type: 'error', message: 'Failed to delete image.' });
-                setShowAlert(true);
+                showAlert({ type: 'error', message: 'Failed to delete image.' });
                 return;
             };
 
-            setAlert({ type: 'success', message: data.message });
-            setShowAlert(true);
+            showAlert({ type: 'success', message: data.message });
 
         } catch (error) {
             console.error('Error deleting image:', error);
-            setAlert({ type: 'error', message: `Error: ${error}` });
-            setShowAlert(true);
+            showAlert({ type: 'error', message: `Error: ${error}` });
         } finally {
-            setTimeout(() => {
-                setShowAlert(false);
-            }, 5000);
             setImageToDelete(null);
             fetchImages();
         };
@@ -210,8 +215,6 @@ const Images = () => {
             <Loader size='xl' />
         ) : (
             <>
-                {showAlert && <Alert type={alert.type} message={alert.message} />}
-
                 <div className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14' : 'opacity-0'}`}>
                     <div className='space-y-0.5 mb-4'>
                         <h1 className='text-2xl font-semibold font-italiana uppercase tracking-widest'>Images</h1>
@@ -241,11 +244,13 @@ const Images = () => {
                     <Table
                         columns={columns}
                         dataSource={images}
-                        pagination={{
-                            totalItems: images.length,
-                            itemsPerPage: itemsPerPage
-                        }}
+                        pagination={pagination}
+                        loading={loading}
                         tableKey='images'
+                        currentFilters={filters}
+                        currentPage={pagination.currentPage}
+                        onFilterChange={(newFilters) => { setFilters(newFilters); fetchImages(1, newFilters); }}
+                        onPageChange={(page) => fetchImages(page, filters)}
                     />
 
                     {isAddModalOpen && <AddImageModal key='modal' submitNewImage={addNewImage} handleClose={handleCloseModal}/>}

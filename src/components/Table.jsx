@@ -5,7 +5,11 @@ import { ArrowUp, ArrowDown, ListFilter } from 'lucide-react';
 import Pagination from './Pagination';
 import Loader from './Loader';
 
-const Table = ({columns, dataSource, pagination, loading=false, tableKey}) => {
+const Table = ({
+    columns, dataSource, pagination, loading=false, tableKey,
+    onSortChange, onFilterChange, onPageChange, currentSort,
+    currentFilters, currentPage
+}) => {
     // console.log(dataSource);
     const storageKey = `${tableKey}-table-state`;
 
@@ -29,16 +33,6 @@ const Table = ({columns, dataSource, pagination, loading=false, tableKey}) => {
         return {};
     });
 
-    const [currentPage, setCurrentPage] = useState(() => {
-        const savedState = sessionStorage.getItem(storageKey);
-        if(savedState) {
-            const { currentPage } = JSON.parse(savedState);
-
-            return currentPage || 1;
-        }
-        return 1;
-    });
-
     const itemsPerPage = pagination?.itemsPerPage || 10;
 
     useEffect(() => {
@@ -47,96 +41,40 @@ const Table = ({columns, dataSource, pagination, loading=false, tableKey}) => {
         sessionStorage.setItem(storageKey, JSON.stringify(stateToStore))
     }, [sortConfig, filters, currentPage, storageKey]);
 
-    const handleClearFilters = () => {
-        setSortConfig({key: null, direction: null});
-        setFilters({});
-        setCurrentPage(1);
-        sessionStorage.removeItem(storageKey);
-    };
+    // const handleClearFilters = () => {
+    //     setSortConfig({key: null, direction: null});
+    //     setFilters({});
+    //     setCurrentPage(1);
+    //     sessionStorage.removeItem(storageKey);
+    // };
 
 
     const handleSort = (col) => {
         if (!col.sort) return;
 
-        setCurrentPage(1);
+        // setCurrentPage(1);
+        let newSort = { key: col.dataId, direction: 'asc'}
+        if (currentSort?.key === col.dataId) {
+            if(currentSort.direction === 'asc') newSort.direction = 'desc';
+            else if (currentSort.direction === 'desc') newSort = {key: null, direction: null};
+        }
 
-        setSortConfig((prev) => {
-            if (prev.key === col.dataId) {
-                // Toggle between asc -> desc -> of'
-                if (prev.direction === 'asc') return { key: col.dataId, direction: 'desc' };
-                if (prev.direction === 'desc') return { key: null, direction: null };
-            }
-            return { key: col.dataId, direction: 'asc' };
-        });
+        onSortChange?.(newSort);
     };
 
     const handleFilter = (colKey, value) => {
-        setCurrentPage(1);
+        const updatedFilters = {...currentFilters};
 
-        setFilters((prev) => {
-            if (value === 'All') {
-                // remove filter for that column
-                const updated = {...prev};
-                delete updated[colKey];
-                return updated;
-            }
+        if (value === 'All') delete updatedFilters[colKey];
+        else updatedFilters[colKey] = value;
 
-            return {...prev, [colKey]: value};
-        })
-    }
+        onFilterChange?.(updatedFilters);
+        // setCurrentPage(1);
 
-    const sortedData = useMemo(() => {
-        if (!dataSource) return [];
+    };
 
-        // 🔒 Safeguard against undefined sortConfig
-        if (!sortConfig || !sortConfig.key) return dataSource;
+    const handlePageChange = (page) => onPageChange?.(page);
 
-
-        // standard ascending/descending
-        const sorted = [...dataSource].sort((a,b) => {
-            const aValue = a[sortConfig.key];
-            const bValue = b[sortConfig.key];
-
-            if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-            if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-            return 0;
-        });
-
-        return sorted;
-    }, [dataSource, sortConfig]);
-
-    const filteredData = useMemo(() => {
-        if (!sortedData) return [];
-
-        // 🛡️ Defensive fix: ensure filters is always an object
-        const activeFilters = filters && typeof filters === 'object' ? filters : {};
-
-        // let result = sortedData;
-        let filtered = [...sortedData];
-
-        Object.entries(activeFilters).forEach(([colKey, value]) => {
-            if (value && value !== 'all') {
-                filtered = filtered.filter((item) => String(item[colKey]) === String(value));
-            }
-        });
-
-        return filtered;
-    }, [sortedData, filters])
-
-    const paginatedData = useMemo(() => {
-        // if (!Array.isArray(filteredData)) return [];
-
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-
-        return filteredData.slice(startIndex, endIndex);
-    }, [filteredData, currentPage, itemsPerPage]);
-
-
-    // console.log('data length: ', dataSource?.length)
-    // console.log(dataSource)
-    // console.log('sortedData length: ', sortedData?.length)
-    // console.log('paginateData length: ', paginatedData?.length)
 
     return (
         <div className='overflow-x-auto h-112 border border-base-content/5 rounded-box shadow-2xl shadow-base-300 mb-8'>
@@ -229,8 +167,8 @@ const Table = ({columns, dataSource, pagination, loading=false, tableKey}) => {
                             </td>
                         </tr>
                     ) : (
-                        paginatedData?.length > 0 ? (
-                            paginatedData?.map((row, rowIndex) => (
+                        dataSource?.length > 0 ? (
+                            dataSource?.map((row, rowIndex) => (
                                 <tr key={rowIndex} className='hover:bg-base-300 text-center'>
                                     {columns?.map((column, colIndex) => (
                                         <td key={colIndex} className='text-nowrap'>{column.render? column.render({ row: { original: row } }) : row[column.dataId]}</td>
@@ -250,9 +188,9 @@ const Table = ({columns, dataSource, pagination, loading=false, tableKey}) => {
                             <td colSpan={columns?.length} className='text-center'>
                                 <Pagination
                                     totalItems={pagination?.totalItems}
-                                    itemsPerPage={itemsPerPage}
+                                    itemsPerPage={pagination?.itemsPerPage}
                                     currentPage={currentPage}
-                                    onPageChange={setCurrentPage}
+                                    onPageChange={handlePageChange}
                                 />
                             </td>
                         </tr>

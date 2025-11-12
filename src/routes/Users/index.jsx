@@ -20,6 +20,7 @@ const Users = () => {
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [selected, setSelected] = useState({});
     const {showAlert} = useAlert();
+    const [pagination, setPagination] = useState({ totalItems: 0, itemsPerPage: 10, currentPage: 1 });
 
     const columns = [
         {title: 'Name', dataId: 'name'},
@@ -83,19 +84,23 @@ const Users = () => {
         };
     }, []);
 
-    const getUsers = async () => {
+    const getUsers = async (page = pagination.currentPage) => {
         setLoading(true);
         try {
             const response = await fetch(`${API_BASE_URL}/api/users`, {credentials: 'include'});
             if (response.ok) {
                 const data = await response.json();
                 setUsers(data.users);
+
+                setPagination(prev => ({
+                    ...prev,
+                    totalItems: data.pagination.totalItems,
+                    currentPage: data.pagination.currentPage
+                }));
             };
         } catch (error) {
             console.error('Error fetching users:', error);
             showAlert({type: 'error', message:'Failed to fetch users.'});
-            // setAlert({type: 'error', message: 'Failed to fetch users.'});
-            // setRevealAlert(true);
         } finally {
             setLoading(false);
         };
@@ -346,9 +351,10 @@ const Users = () => {
                 <Table
                     columns={columns}
                     dataSource={users}
-                    pagination={{
-                        totalItems: users?.length,
-                    }}
+                    pagination={pagination}
+                    loading={loading}
+                    currentPage={pagination.currentPage}
+                    onPageChange={(page) => getUsers(page)}
                     tableKey='users'
                 />
 

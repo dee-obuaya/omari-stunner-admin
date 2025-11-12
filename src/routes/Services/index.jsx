@@ -6,30 +6,34 @@ import EditServiceModal from './EditServiceModal';
 import Loader from '../../components/Loader';
 import Table from '../../components/Table';
 import { SlPlus, SlPencil, SlTrash } from 'react-icons/sl';
-import Alert from '../../components/Alert';
+import { useAlert } from '../../contexts/AlertContext';
 import ConfirmPopup from '../../components/ConfirmPopup';
 import { API_BASE_URL } from '../../constants/ServerUrl';
 
 const Services = () => {
     const [services, setServices] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [visible, setVisible] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [serviceToDelete, setServiceToDelete] = useState({});
     const [serviceToEdit, setServiceToEdit] = useState({});
-    const [alert, setAlert] = useState({ type: '', message: '' });
-    const [showAlert, setShowAlert] = useState(false);
+    const {showAlert} = useAlert();
     const formData = new FormData();
+    const [pagination, setPagination] = useState({ totalItems: 0, itemsPerPage: 10, currentPage: 1 });
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+    const [filters, setFilters] = useState({});
 
     const columns = [
         {
             title: 'Service',
             dataId: 'service',
+            sort: true
         },
         {
             title: 'Tag',
             dataId: 'tag',
+            filter: ['All', 'Makeup', 'Lashes', 'Brows']
         },
         {
             title: 'Price',
@@ -87,16 +91,34 @@ const Services = () => {
         };
     }, []);
 
-    const getServices = async () => {
+    const getServices = async (page = pagination.currentPage, sort = sortConfig, filterValues = filters) => {
+        setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/api/services`, {credentials: 'include'});
+            const params = new URLSearchParams();
+            params.set('page', page);
+            params.set('limit', pagination.itemsPerPage);
+
+            if (sort.key && sort.direction) {
+                params.set('sort', sort.key);
+                params.set('order', sort.direction);
+            };
+
+            Object.entries(filterValues).forEach(([key, value]) => {
+                if (value && value !== 'All') params.set(key, value);
+            });
+
+            const response = await fetch(`${API_BASE_URL}/api/services?${params}`, {credentials: 'include'});
             const data = await response.json();
 
             if (response.ok) {
-                setServices(data);
+                setServices(data.services);
+                setPagination(prev => ({
+                    ...prev,
+                    totalItems: data.pagination.totalItems,
+                    currentPage: data.pagination.currentPage
+                }));
             } else {
-                setAlert({ type: 'error', message: data.message || 'Failed to fetch services.' });
-                setShowAlert(true);
+                showAlert({ type: 'error', message: data.message || 'Failed to fetch services.' });
             }
         } catch (error) {
             console.error('Error fetching services:', error);
@@ -122,28 +144,21 @@ const Services = () => {
 
             if (!res.ok) {
                 // console.log(res);
-                setAlert({ type: 'error', message: res.json().statusText || res.json().message });
-                setShowAlert(true);
+                showAlert({ type: 'error', message: res.json().statusText || res.json().message });
                 return;
             };
 
             const response = await res.json();
             if (response.service) {
-                setAlert({type: 'success', message: `${response.service} service added successfully!`});
-                setShowAlert(true);
+                showAlert({type: 'success', message: `${response.service} service added successfully!`});
             } else {
-                setAlert({ type: 'error', message: response.message });
-                setShowAlert(true);
+                showAlert({ type: 'error', message: response.message });
             };
 
         } catch (error) {
             console.error('Error:', error);
-            setAlert({type: 'error', message: `Error: ${error.message}`});
-            setShowAlert(true);
+            showAlert({type: 'error', message: `Error: ${error.message}`});
         } finally {
-            setTimeout(() => {
-                setShowAlert(false);
-            }, 5000);
             getServices();
         };
     };
@@ -192,28 +207,21 @@ const Services = () => {
 
             if (!res.ok) {
                 // console.log(res);
-                setAlert({ type: 'error', message: response.statusText || response.message });
-                setShowAlert(true);
+                showAlert({ type: 'error', message: response.statusText || response.message });
                 return;
             };
 
 
             if (response.service) {
-                setAlert({type: 'success', message: `${response.service} service updated successfully!`});
-                setShowAlert(true);
+                showAlert({type: 'success', message: `${response.service} service updated successfully!`});
                 setIsEditModalOpen(false);
             } else {
-                setAlert({ type: 'error', message: response.message || response.statusText });
-                setShowAlert(true);
+                showAlert({ type: 'error', message: response.message || response.statusText });
             };
         } catch (error) {
             console.error('Error updating service:', error);
-            setAlert({ type: 'error', message: `Error: ${error.message}` });
-            setShowAlert(true);
+            showAlert({ type: 'error', message: `Error: ${error.message}` });
         } finally {
-            setTimeout(() => {
-                setShowAlert(false);
-            }, 5000);
             getServices();
         }
     }
@@ -231,23 +239,16 @@ const Services = () => {
             const data = await response.json();
 
             if (!response.ok) {
-                setAlert({ type: 'error', message: 'Failed to delete service.' });
-                setShowAlert(true);
+                showAlert({ type: 'error', message: 'Failed to delete service.' });
             };
 
-            setAlert({ type: 'success', message: data.message });
-            setShowAlert(true);
+            showAlert({ type: 'success', message: data.message });
             getServices();
 
         } catch (error) {
             console.error('Error deleting service:', error);
-            setAlert({ type: 'error', message: `Error: ${error}` });
-            setShowAlert(true);
-        } finally {
-            setTimeout(() => {
-                setShowAlert(false);
-            }, 5000);
-        };
+            showAlert({ type: 'error', message: `Error: ${error}` });
+        }
     };
 
     return (
@@ -256,7 +257,6 @@ const Services = () => {
         ) :
         (
             <>
-                {showAlert && <Alert type={alert.type} message={alert.message} />}
 
                 <div className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14' : 'opacity-0'}`}>
                     <div className='space-y-0.5 mb-4'>
@@ -287,10 +287,15 @@ const Services = () => {
                     <Table
                         columns={columns}
                         dataSource={services}
-                        pagination={{
-                            totalItems: services.length,
-                        }}
+                        pagination={pagination}
+                        loading={loading}
                         tableKey='services'
+                        currentSort={sortConfig}
+                        currentFilters={filters}
+                        currentPage={pagination.currentPage}
+                        onSortChange={(newSort) => { setSortConfig(newSort); getServices(1, newSort, filters); }}
+                        onFilterChange={(newFilters) => { setFilters(newFilters); getServices(1, sortConfig, newFilters); }}
+                        onPageChange={(page) => getServices(page, sortConfig, filters)}
                     />
 
                     {isAddModalOpen && <AddServiceModal submitNewService={addNewService} />}

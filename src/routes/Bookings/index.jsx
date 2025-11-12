@@ -7,7 +7,7 @@ import ImportBookingModal from './ImportBookingModal';
 import Loader from '../../components/Loader';
 import Table from '../../components/Table';
 import { SlPlus, SlPencil, SlTrash, SlDoc } from 'react-icons/sl';
-import Alert from '../../components/Alert';
+import {useAlert} from '../../contexts/AlertContext';
 import ConfirmPopup from '../../components/ConfirmPopup';
 import { API_BASE_URL } from '../../constants/ServerUrl';
 
@@ -19,13 +19,11 @@ const Bookings = () => {
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 	const [selectedBooking, setSelectedBooking] = useState(null);
-	const [alert, setAlert] = useState({
-		type: '',
-		message: '',
-		visible: false,
-	});
-	const [showAlert, setShowAlert] = useState(false);
+    const {showAlert} = useAlert()
 	const formData = new FormData();
+    const [pagination, setPagination] = useState({ totalItems: 0, itemsPerPage: 10, currentPage: 1 });
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+    const [filters, setFilters] = useState({});
 
 	const columns = [
 		{
@@ -88,7 +86,7 @@ const Bookings = () => {
 				'Pending',
 				'Confirmed',
 				'Completed',
-				'Canceled',
+				'Cancelled',
 				'Moved',
 			],
 			render: (booking) => {
@@ -211,21 +209,39 @@ const Bookings = () => {
 		};
 	}, []);
 
-	const getBookings = async () => {
+	const getBookings = async (page = pagination.currentPage, sort = sortConfig, filterValues = filters) => {
 		setLoading(true);
 		try {
-			const res = await fetch(`${API_BASE_URL}/api/bookings`, {credentials: 'include'});
+            const params = new URLSearchParams();
+            params.set('page', page);
+            params.set('limit', pagination.itemsPerPage);
+
+            if (sort.key && sort.direction) {
+                params.set('sort', sort.key);
+                params.set('order', sort.direction);
+            };
+
+            Object.entries(filterValues).forEach(([key, value]) => {
+                if (value && value !== 'All') params.set(key, value);
+            });
+
+			const res = await fetch(`${API_BASE_URL}/api/bookings?${params}`, {credentials: 'include'});
 			const data = await res.json();
 
 			if (res.ok) {
 				setBookings(data.bookings);
+                setPagination(prev => ({
+                    ...prev,
+                    totalItems: data.pagination.totalItems,
+                    currentPage: data.pagination.currentPage
+                }));
 			} else {
-				setAlert({
+                console.error(data.message);
+				showAlert({
 					type: 'error',
 					message: data.message || 'Failed to fetch bookings.',
 				});
-				setShowAlert(true);
-			}
+            }
 
 			// setTimeout(() => {
 			//     console.log('bookings data: ', data);
@@ -236,13 +252,9 @@ const Bookings = () => {
 			// }
 		} catch (error) {
 			console.error('Error fetching bookings:', error);
-			setAlert({ type: 'error', message: `Error: ${error.message}` });
-			setShowAlert(true);
+			showAlert({ type: 'error', message: `Error: ${error.message}` });
 		} finally {
 			setLoading(false);
-			setTimeout(() => {
-				setShowAlert(false);
-			}, 5000);
 		}
 	};
 
@@ -294,37 +306,30 @@ const Bookings = () => {
 
 			if (!res.ok) {
 				console.log('response: ', response);
-				setAlert({
+				showAlert({
 					type: 'error',
 					message:
 						response.statusText ||
 						response.message ||
 						'Failed to create booking.',
 				});
-				setShowAlert(true);
 				return;
 			}
 
 			if (response.booking) {
-				setAlert({
+				showAlert({
 					type: 'success',
 					message:
 						response.message ||
 						`${response.booking.name}'s booking created successfully!`,
 				});
-				setShowAlert(true);
 			} else {
-				setAlert({ type: 'error', message: response.message });
-				setShowAlert(true);
+				showAlert({ type: 'error', message: response.message });
 			}
 		} catch (error) {
 			console.error('Error:', error);
-			setAlert({ type: 'error', message: `Error: ${error.message}` });
-			setShowAlert(true);
+			showAlert({ type: 'error', message: `Error: ${error.message}` });
 		} finally {
-			setTimeout(() => {
-				setShowAlert(false);
-			}, 5000);
 			getBookings();
 		}
 	};
@@ -353,37 +358,30 @@ const Bookings = () => {
 
 			if (!res?.ok) {
 				console.log('response: ', response);
-				setAlert({
+				showAlert({
 					type: 'error',
 					message:
 						response.statusText ||
 						response.message ||
 						'Failed to update booking.',
 				});
-				setShowAlert(true);
 				return;
 			}
 
 			if (response?.booking) {
-				setAlert({
+				showAlert({
 					type: 'success',
 					message:
 						response.message ||
 						`${response.booking.name}'s booking updated successfully!`,
 				});
-				setShowAlert(true);
 			} else {
-				setAlert({ type: 'error', message: response.message });
-				setShowAlert(true);
+				showAlert({ type: 'error', message: response.message });
 			}
 		} catch (error) {
 			console.error('Error:', error);
-			setAlert({ type: 'error', message: `Error: ${error.message}` });
-			setShowAlert(true);
+			showAlert({ type: 'error', message: `Error: ${error.message}` });
 		} finally {
-			setTimeout(() => {
-				setShowAlert(false);
-			}, 5000);
 			getBookings();
 		}
 	};
@@ -405,25 +403,18 @@ const Bookings = () => {
 			const data = await response.json();
 
 			if (!response.ok) {
-				setAlert({
+				showAlert({
 					type: 'error',
 					message: data.message || 'Failed to delete booking.',
 				});
-				setShowAlert(true);
 				return;
 			} else {
-				setAlert({ type: 'success', message: data.message });
-				setShowAlert(true);
+				showAlert({ type: 'success', message: data.message });
 				getBookings();
 			}
 		} catch (error) {
 			console.error('Error deleting booking:', error);
-			setAlert({ type: 'error', message: `Error: ${error}` });
-			setShowAlert(true);
-		} finally {
-			setTimeout(() => {
-				setShowAlert(false);
-			}, 5000);
+			showAlert({ type: 'error', message: `Error: ${error}` });
 		}
 	};
 
@@ -431,7 +422,6 @@ const Bookings = () => {
 		<Loader size='xl' />
 	) : (
 		<>
-			{showAlert && <Alert type={alert.type} message={alert.message} />}
 
 			<div
 				className={`transition-all ease-initial duration-700 ${
@@ -502,10 +492,15 @@ const Bookings = () => {
 				<Table
 					columns={columns}
 					dataSource={bookings}
-					pagination={{
-						totalItems: bookings?.length,
-					}}
+					pagination={pagination}
+                    loading={loading}
 					tableKey='bookings'
+                    currentSort={sortConfig}
+                    currentFilters={filters}
+                    currentPage={pagination.currentPage}
+                    onSortChange={(newSort) => { setSortConfig(newSort); getBookings(1, newSort, filters); }}
+                    onFilterChange={(newFilters) => { setFilters(newFilters); getBookings(1, sortConfig, newFilters); }}
+                    onPageChange={(page) => getBookings(page, sortConfig, filters)}
 				/>
 
 				{isAddModalOpen && (

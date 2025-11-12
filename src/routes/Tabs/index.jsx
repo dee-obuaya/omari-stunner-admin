@@ -5,7 +5,7 @@ import AddTabModal from './AddTabModal';
 import EditTabModal from './EditTabModal';
 import Table from '../../components/Table';
 import { SlPlus, SlPencil, SlTrash } from 'react-icons/sl';
-import Alert from '../../components/Alert';
+import { useAlert } from '../../contexts/AlertContext';
 import Loader from '../../components/Loader';
 import ConfirmPopup from '../../components/ConfirmPopup';
 import { API_BASE_URL } from '../../constants/ServerUrl';
@@ -14,8 +14,7 @@ const Tabs = () => {
     const [loading, setLoading] = useState(false);
     const [visible, setVisible] = useState(false);
     const [tabs, setTabs] = useState([]);
-    const [alert, setAlert] = useState({type: '', message: ''});
-    const [showAlert, setShowAlert] = useState(false);
+    const {showAlert} = useAlert();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [tabToEdit, setTabToEdit] = useState({});
@@ -88,15 +87,13 @@ const Tabs = () => {
             const response = await fetch(`${API_BASE_URL}/api/tabs`, {credentials: 'include'});
             if (response.ok) {
                 const data = await response.json();
-                setTabs(data);
+                setTabs(data.tabs);
             };
         } catch (error) {
             console.error('Error fetching tabs:', error);
-            setAlert({type: 'error', message: 'Failed to fetch tabs.'});
-            setShowAlert(true);
+            showAlert({type: 'error', message: 'Failed to fetch tabs.'});
         } finally {
             setLoading(false);
-            setTimeout(() => setShowAlert(false), 3000)
         };
     };
 
@@ -140,28 +137,23 @@ const Tabs = () => {
             const data = await response.json();
 
             if (!response.ok) {
-                setAlert({type: 'error', message: data.message || data.statusText || 'Failed to add new tab.'});
-                setShowAlert(true);
+                showAlert({type: 'error', message: data.message || data.statusText || 'Failed to add new tab.'});
                 return;
             };
 
             // console.log(data);
             if (data.tab) {
-                setAlert({type: 'success', message: data.message});
-                setShowAlert(true);
+                showAlert({type: 'success', message: data.message});
                 // handleCloseModal();
                 getTabs();
             } else {
-                setAlert({type: 'error', message: 'Failed to add new tab.'});
-                setShowAlert(true);
+                showAlert({type: 'error', message: 'Failed to add new tab.'});
             };
         } catch (error) {
             console.error('Error adding new tab:', error);
-            setAlert({type: 'error', message: 'Error adding new tab.'});
-            setShowAlert(true);
+            showAlert({type: 'error', message: 'Error adding new tab.'});
         } finally {
             handleCloseModal();
-            setTimeout(() => setShowAlert(false), 5000)
         };
     };
 
@@ -183,27 +175,22 @@ const Tabs = () => {
             // console.log('data: ', data);
 
             if (!response.ok) {
-                setAlert({type: 'error', message: data.message|| data.statusText || 'Failed to update tab.'});
-                setShowAlert(true);
+                showAlert({type: 'error', message: data.message|| data.statusText || 'Failed to update tab.'});
                 return;
             };
 
             if (data.tab) {
-                setAlert({type: 'success', message: data.message});
-                setShowAlert(true);
+                showAlert({type: 'success', message: data.message});
                 handleCloseModal();
                 getTabs();
             } else {
-                setAlert({type: 'error', message: 'Failed to update tab.'});
-                setShowAlert(true);
+                showAlert({type: 'error', message: 'Failed to update tab.'});
             }
         } catch (error) {
             console.error('Error updating tab:', error);
-            setAlert({type: 'error', message: 'Error updating tab.'});
-            setShowAlert(true);
+            showAlert({type: 'error', message: 'Error updating tab.'});
         } finally {
             handleCloseModal();
-            setTimeout(() => setShowAlert(false), 5000)
         };
     }
 
@@ -219,21 +206,17 @@ const Tabs = () => {
             const data = await response.json();
 
             if (!response.ok) {
-                setAlert({type: 'error', message: data.message || 'Failed to delete tab.'});
-                setShowAlert(true);
+                showAlert({type: 'error', message: data.message || 'Failed to delete tab.'});
                 return;
             };
 
-            setAlert({type: 'success', message: data.message});
-            setShowAlert(true);
+            showAlert({type: 'success', message: data.message});
             getTabs();
         } catch (error) {
             console.error('Error deleting tab:', error);
-            setAlert({type: 'error', message: 'Failed to delete tab.'});
-            setShowAlert(true);
+            showAlert({type: 'error', message: 'Failed to delete tab.'});
         } finally {
             setTabToDelete(null);
-            setTimeout(() => setShowAlert(false), 5000)
         };
     };
 
@@ -243,8 +226,6 @@ const Tabs = () => {
         ) :
         (
             <>
-                {showAlert && <Alert type={alert.type} message={alert.message} />}
-
                 <div className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14' : 'opacity-0'}`}>
                     <div className='space-y-0.5 mb-4'>
                         <h1 className='text-2xl font-semibold font-italiana uppercase tracking-widest'>Tabs</h1>
@@ -269,7 +250,12 @@ const Tabs = () => {
                         </motion.button>
                     </div>
 
-                    <Table loading={loading} columns={columns} dataSource={tabs} tableKey='tabs' />
+                    <Table
+                        loading={loading}
+                        columns={columns}
+                        dataSource={tabs}
+                        tableKey='tabs'
+                    />
 
                     {isAddModalOpen && <AddTabModal submitNewTab={addNewTab} handleClose={handleCloseModal} />}
                     {isEditModalOpen && <EditTabModal tab={tabToEdit} submitUpdatedTab={editTab} handleClose={handleCloseModal} />}
