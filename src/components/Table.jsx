@@ -94,9 +94,12 @@ const Table = ({
                                     )}
                                     {column.filter && (
                                         <div className='dropdown dropdown-end'>
-                                            <motion.div whileTap={{ scale:0.95 }} tabIndex={0} role='button' className='btn btn-dash btn-xs'>
-                                                <ListFilter size={14} />
-                                            </motion.div>
+                                            <div className='indicator'>
+                                                {Object.entries(currentFilters).length > 0 && <span className='indicator-item status status-error'></span>}
+                                                <motion.div whileTap={{ scale:0.95 }} tabIndex={0} role='button' className='btn btn-dash btn-xs'>
+                                                    <ListFilter size={14} />
+                                                </motion.div>
+                                            </div>
                                             <AnimatePresence>
                                                 <motion.ul
                                                     tabIndex='-1'
