@@ -9,7 +9,7 @@ import Table from '../../components/Table';
 import { useAlert } from '../../contexts/AlertContext';
 import ConfirmPopup from '../../components/ConfirmPopup';
 import cld from '../../utils/cloudinary';
-import { API_BASE_URL } from '../../constants/ServerUrl';
+import { API_BASE_URL, IMAGES_TABLE_KEY } from '../../constants/ServerUrl';
 
 const Images = () => {
     const [images, setImages] = useState([]);
@@ -20,7 +20,25 @@ const Images = () => {
     const [imageToDelete, setImageToDelete] = useState({});
     const formData = new FormData();
     const [pagination, setPagination] = useState({ totalItems: 0, itemsPerPage: 10, currentPage: 1 });
-    const [filters, setFilters] = useState({});
+
+    const loadState = () => {
+        const savedState = sessionStorage.getItem(IMAGES_TABLE_KEY);
+
+        if (!savedState) return { filters: {}, page: 1 };
+
+        try {
+            const parsedState = JSON.parse(savedState);
+            return {
+                filters: parsedState.currentFilters || null,
+                page: parsedState.currentPage || 1,
+            };
+        } catch (error) {
+            console.error('Error parsing saved table state:', error);
+            return { filters: {}, currentPage: 1 };
+        }
+    }
+
+    const [{filters, page}, setTableState] = useState(loadState());
 
     const columns = [
         {title: 'Image', dataId: 'image', render: (img) => {
@@ -80,7 +98,7 @@ const Images = () => {
     useEffect(() => {
         let visibilityTimer;
         const timer = setTimeout(() => {
-            fetchImages();
+            fetchImages(page, filters);
             visibilityTimer = setTimeout(() => {
                 setVisible(true);
             }, 500);
@@ -92,7 +110,11 @@ const Images = () => {
         };
     }, []);
 
-    const fetchImages = async (page = pagination.currentPage, filterValues = filters) => {
+    // useEffect(() => {
+    //     console.log('Table state changed:', {filters, page});
+    // }, [filters, page]);
+
+    const fetchImages = async (page = pagination.currentPage, filterValues = {filters}) => {
         setLoading(true);
         try {
             const params = new URLSearchParams();
@@ -109,10 +131,10 @@ const Images = () => {
 
             if (res.ok) {
 
-                const transformedImages = data.map(img => {
-                    const imageToTransform = cld.image(img.image.filename);
+                const transformedImages = data?.images?.map(img => {
+                    const imageToTransform = cld.image(img?.image?.filename);
 
-                    const transformedImgUrl = imageToTransform.addTransformation(transformation).toURL();
+                    const transformedImgUrl = imageToTransform?.addTransformation(transformation).toURL();
 
                     img.image.url = transformedImgUrl;
 
@@ -123,8 +145,8 @@ const Images = () => {
                 // console.log(transformedImages)
                 setPagination(prev => ({
                     ...prev,
-                    totalItems: data.pagination.totalItems,
-                    currentPage: data.pagination.currentPage
+                    totalItems: data?.pagination?.totalItems,
+                    currentPage: data?.pagination?.currentPage
                 }));
             }else {
                 showAlert({ type: 'error', message: data.message || 'Failed to fetch services.' });
@@ -246,11 +268,17 @@ const Images = () => {
                         dataSource={images}
                         pagination={pagination}
                         loading={loading}
-                        tableKey='images'
                         currentFilters={filters}
                         currentPage={pagination.currentPage}
-                        onFilterChange={(newFilters) => { setFilters(newFilters); fetchImages(1, newFilters); }}
-                        onPageChange={(page) => fetchImages(page, filters)}
+                        onFilterChange={(newFilters) => {
+                            setTableState(prev => ({...prev, filters: newFilters, page: 1}));
+                            sessionStorage.setItem(IMAGES_TABLE_KEY, JSON.stringify({currentFilters: newFilters, currentPage: 1}));
+                            fetchImages(1, newFilters); }}
+                        onPageChange={(newPage) => {
+                            setTableState(prev => ({...prev, page: newPage}));
+                            sessionStorage.setItem(IMAGES_TABLE_KEY, JSON.stringify({currentPage: newPage, currentFilters: filters}));
+                            fetchImages(newPage, filters);
+                        }}
                     />
 
                     {isAddModalOpen && <AddImageModal key='modal' submitNewImage={addNewImage} handleClose={handleCloseModal}/>}

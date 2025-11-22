@@ -9,7 +9,8 @@ import Table from '../../components/Table';
 import { SlPlus, SlPencil, SlTrash, SlDoc } from 'react-icons/sl';
 import {useAlert} from '../../contexts/AlertContext';
 import ConfirmPopup from '../../components/ConfirmPopup';
-import { API_BASE_URL } from '../../constants/ServerUrl';
+import { API_BASE_URL, BOOKINGS_TABLE_KEY } from '../../constants/ServerUrl';
+import { cat } from '@cloudinary/url-gen/qualifiers/focusOn';
 
 const Bookings = () => {
 	const [bookings, setBookings] = useState([]);
@@ -22,8 +23,26 @@ const Bookings = () => {
     const {showAlert} = useAlert()
 	const formData = new FormData();
     const [pagination, setPagination] = useState({ totalItems: 0, itemsPerPage: 10, currentPage: 1 });
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
-    const [filters, setFilters] = useState({});
+
+    const loadState = () => {
+        const savedState = sessionStorage.getItem(BOOKINGS_TABLE_KEY);
+
+        if (!savedState) return { filters: {}, sortConfig: { key: null, direction: null } , page: 1 };
+
+        try {
+            const parsedState = JSON.parse(savedState);
+            return {
+                filters: parsedState.currentFilters || {},
+                sortConfig: parsedState.currentSort || { key: null, direction: null },
+                page: parsedState.currentPage || 1,
+            };
+        } catch (error) {
+            console.error('Error parsing saved table state:', error);
+            return { filters: {}, sortConfig: { key: null, direction: null }, page: 1 };
+        }
+    };
+
+    const [{filters, sortConfig, page}, setTableState] = useState(loadState());
 
 	const columns = [
 		{
@@ -197,7 +216,7 @@ const Bookings = () => {
 	useEffect(() => {
 		let visibilityTimer;
 		const timer = setTimeout(() => {
-			getBookings();
+			getBookings(page, sortConfig, filters);
 			visibilityTimer = setTimeout(() => {
 				setVisible(true);
 			}, 500);
@@ -209,7 +228,7 @@ const Bookings = () => {
 		};
 	}, []);
 
-	const getBookings = async (page = pagination.currentPage, sort = sortConfig, filterValues = filters) => {
+	const getBookings = async (page = pagination.currentPage, sort = {sortConfig}, filterValues = {filters}) => {
 		setLoading(true);
 		try {
             const params = new URLSearchParams();
@@ -242,14 +261,6 @@ const Bookings = () => {
 					message: data.message || 'Failed to fetch bookings.',
 				});
             }
-
-			// setTimeout(() => {
-			//     console.log('bookings data: ', data);
-			// }, 200);
-			// else {
-			//     setAlert({ type: 'error', message: data.message || 'Failed to fetch bookings.' });
-			//     setShowAlert(true);
-			// }
 		} catch (error) {
 			console.error('Error fetching bookings:', error);
 			showAlert({ type: 'error', message: `Error: ${error.message}` });
@@ -481,12 +492,6 @@ const Bookings = () => {
 							</li>
 						</ul>
 					</div>
-					{/* <button
-                                className='btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center'
-                                onClick={()=>document.getElementById('add-booking-modal').showModal()}
-                            >
-                            <SlPlus className='text-sm' /> New Booking
-                            </button> */}
 				</div>
 
 				<Table
@@ -494,13 +499,24 @@ const Bookings = () => {
 					dataSource={bookings}
 					pagination={pagination}
                     loading={loading}
-					tableKey='bookings'
                     currentSort={sortConfig}
                     currentFilters={filters}
                     currentPage={pagination.currentPage}
-                    onSortChange={(newSort) => { setSortConfig(newSort); getBookings(1, newSort, filters); }}
-                    onFilterChange={(newFilters) => { setFilters(newFilters); getBookings(1, sortConfig, newFilters); }}
-                    onPageChange={(page) => getBookings(page, sortConfig, filters)}
+                    onSortChange={(newSort) => {
+                        setTableState(prev => ({...prev, sortConfig: newSort, page: 1}));
+                        sessionStorage.setItem(BOOKINGS_TABLE_KEY, JSON.stringify({currentFilters: filters, currentSort: newSort, currentPage: 1}));
+                        getBookings(1, newSort, filters);
+                    }}
+                    onFilterChange={(newFilters) => {
+                        setTableState(prev => ({...prev, filters: newFilters,  page: 1}));
+                        sessionStorage.setItem(BOOKINGS_TABLE_KEY, JSON.stringify({currentFilters: newFilters, currentSort: sortConfig, currentPage: 1}));
+                        getBookings(1, sortConfig, newFilters);
+                    }}
+                    onPageChange={(newPage) => {
+                        setTableState(prev => ({...prev, page: newPage}));
+                        sessionStorage.setItem(BOOKINGS_TABLE_KEY, JSON.stringify({currentFilters: filters, currentSort: sortConfig, currentPage: newPage}));
+                        getBookings(newPage, sortConfig, filters)
+                    }}
 				/>
 
 				{isAddModalOpen && (

@@ -8,7 +8,7 @@ import Table from '../../components/Table';
 import { SlPlus, SlPencil, SlTrash } from 'react-icons/sl';
 import { useAlert } from '../../contexts/AlertContext';
 import ConfirmPopup from '../../components/ConfirmPopup';
-import { API_BASE_URL } from '../../constants/ServerUrl';
+import { API_BASE_URL, SERVICES_TABLE_KEY } from '../../constants/ServerUrl';
 
 const Services = () => {
     const [services, setServices] = useState([]);
@@ -21,8 +21,26 @@ const Services = () => {
     const {showAlert} = useAlert();
     const formData = new FormData();
     const [pagination, setPagination] = useState({ totalItems: 0, itemsPerPage: 10, currentPage: 1 });
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
-    const [filters, setFilters] = useState({});
+
+    const loadState = () => {
+        const savedState = sessionStorage.getItem(SERVICES_TABLE_KEY);
+
+        if (!savedState) return { filters: {}, sortConfig: { key: null, direction: null }, page: 1 };
+
+        try {
+            const parsedState = JSON.parse(savedState);
+            return {
+                filters: parsedState.currentFilters || {},
+                sortConfig: parsedState.currentSort || { key: null, direction: null },
+                page: parsedState.currentPage || 1
+            };
+        } catch (error) {
+            console.error('Error parsing saved table state:', error);
+            return { filters: {}, sort: { key: null, direction: null }, page: 1 };
+        }
+    };
+
+    const [{filters, sortConfig, page}, setTableState] = useState(loadState());
 
     const columns = [
         {
@@ -79,7 +97,7 @@ const Services = () => {
     useEffect(() => {
         let visibilityTimer
         const timer = setTimeout(() => {
-            getServices();
+            getServices(page, sortConfig, filters);
             visibilityTimer = setTimeout(() => {
                 setVisible(true);
             }, 500);
@@ -91,7 +109,7 @@ const Services = () => {
         };
     }, []);
 
-    const getServices = async (page = pagination.currentPage, sort = sortConfig, filterValues = filters) => {
+    const getServices = async (page = pagination.currentPage, sort = {sortConfig}, filterValues = {filters}) => {
         setLoading(true);
         try {
             const params = new URLSearchParams();
@@ -289,13 +307,24 @@ const Services = () => {
                         dataSource={services}
                         pagination={pagination}
                         loading={loading}
-                        tableKey='services'
                         currentSort={sortConfig}
                         currentFilters={filters}
                         currentPage={pagination.currentPage}
-                        onSortChange={(newSort) => { setSortConfig(newSort); getServices(1, newSort, filters); }}
-                        onFilterChange={(newFilters) => { setFilters(newFilters); getServices(1, sortConfig, newFilters); }}
-                        onPageChange={(page) => getServices(page, sortConfig, filters)}
+                        onSortChange={(newSort) => {
+                            setTableState(prev => ({...prev, sortConfig: newSort, page: 1}));
+                            sessionStorage.setItem(SERVICES_TABLE_KEY, JSON.stringify({currentFilters: filters, currentSort: newSort, currentPage: 1}));
+                            getServices(1, newSort, filters);
+                        }}
+                        onFilterChange={(newFilters) => {
+                            setTableState(prev => ({...prev, filters: newFilters,  page: 1}));
+                            sessionStorage.setItem(SERVICES_TABLE_KEY, JSON.stringify({currentFilters: newFilters, currentSort: sortConfig, currentPage: 1}));
+                            getServices(1, sortConfig, newFilters);
+                        }}
+                        onPageChange={(newPage) => {
+                            setTableState(prev => ({...prev, page: newPage}));
+                            sessionStorage.setItem(SERVICES_TABLE_KEY, JSON.stringify({currentFilters: filters, currentSort: sortConfig, currentPage: newPage}));
+                            getServices(newPage, sortConfig, filters)
+                        }}
                     />
 
                     {isAddModalOpen && <AddServiceModal submitNewService={addNewService} />}
