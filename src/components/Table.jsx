@@ -37,7 +37,7 @@ const Table = ({
         // console.log('handleFilter called with:', colKey, value);
 
         if (value === 'All') delete updatedFilters[colKey];
-        else updatedFilters[colKey] = value.toLowerCase();
+        else updatedFilters[colKey] = value
 
         onFilterChange?.(updatedFilters);
     };
@@ -70,7 +70,7 @@ const Table = ({
                                                 <ArrowUp
                                                     size={14}
                                                     className={`transition-all duration-200 ${
-                                                    currentSort.key === column.dataId && (currentSort.direction === 'asc')
+                                                    currentSort?.key === column.dataId && (currentSort?.direction === 'asc')
                                                         ? 'text-warning'
                                                         : 'text-gray-400'
                                                     }`}
@@ -78,7 +78,7 @@ const Table = ({
                                                 <ArrowDown
                                                     size={14}
                                                     className={`transition-all duration-200 -mt-1 ${
-                                                    currentSort.key === column.dataId && (currentSort.direction === 'desc')
+                                                    currentSort?.key === column.dataId && (currentSort?.direction === 'desc')
                                                         ? 'text-warning'
                                                         : 'text-gray-400'
                                                     }`}
@@ -86,7 +86,7 @@ const Table = ({
                                             </motion.span>
                                             <span className="sr-only">
                                                 Sorted {
-                                                    currentSort.direction === 'asc' ? 'ascending': 'descending'
+                                                    currentSort?.direction === 'asc' ? 'ascending': 'descending'
                                                 }
                                             </span>
                                         </>
@@ -111,7 +111,7 @@ const Table = ({
                                                         <button
                                                             onClick={() => handleFilter(column.dataId, option)}
                                                             className={`${
-                                                                (currentFilters[column.dataId] === option.toLowerCase()) ? 'bg-primary text-primary-content' : ''
+                                                                (currentFilters[column.dataId] === option) ? 'bg-primary text-primary-content' : ''
                                                             }`}
                                                         >
                                                             {option}
