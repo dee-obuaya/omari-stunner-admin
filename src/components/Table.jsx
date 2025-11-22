@@ -6,40 +6,10 @@ import Pagination from './Pagination';
 import Loader from './Loader';
 
 const Table = ({
-    columns, dataSource, pagination, loading=false, tableKey,
+    columns, dataSource, pagination, loading=false,
     onSortChange, onFilterChange, onPageChange, currentSort,
     currentFilters, currentPage
 }) => {
-    // console.log(dataSource);
-    const storageKey = `${tableKey}-table-state`;
-
-    const [sortConfig, setSortConfig] = useState(() => {
-        const savedState = sessionStorage.getItem(storageKey);
-        if(savedState) {
-            const { sortConfig } = JSON.parse(savedState);
-
-            return sortConfig || {key: null, direction: null};
-        }
-        return {key: null, direction: null};
-    });
-
-    const [filters, setFilters] = useState(() => {
-        const savedState = sessionStorage.getItem(storageKey);
-        if(savedState) {
-            const { filters } = JSON.parse(savedState);
-
-            return filters || {};
-        }
-        return {};
-    });
-
-    const itemsPerPage = pagination?.itemsPerPage || 10;
-
-    useEffect(() => {
-        const stateToStore = {sortConfig, filters, currentPage}
-
-        sessionStorage.setItem(storageKey, JSON.stringify(stateToStore))
-    }, [sortConfig, filters, currentPage, storageKey]);
 
     // const handleClearFilters = () => {
     //     setSortConfig({key: null, direction: null});
@@ -64,20 +34,19 @@ const Table = ({
 
     const handleFilter = (colKey, value) => {
         const updatedFilters = {...currentFilters};
+        // console.log('handleFilter called with:', colKey, value);
 
         if (value === 'All') delete updatedFilters[colKey];
-        else updatedFilters[colKey] = value;
+        else updatedFilters[colKey] = value.toLowerCase();
 
         onFilterChange?.(updatedFilters);
-        // setCurrentPage(1);
-
     };
 
     const handlePageChange = (page) => onPageChange?.(page);
 
 
     return (
-        <div className='overflow-x-auto h-112 border border-base-content/5 rounded-box shadow-2xl shadow-base-300 mb-8'>
+        <div className='overflow-x-auto h-112 border border-base-content/5 rounded-box shadow-md shadow-base-300 mb-8'>
             <table className='table table-pin-rows bg-base-100 tracking-wider font-libertinus'>
                 {/* head */}
                 <thead className='px-1'>
@@ -87,7 +56,7 @@ const Table = ({
                                 key={column.dataId}
                                 className={`text-nowrap text-center text-lg tracking-widest font-libertinus
                                     ${column.sort && ' cursor-pointer select-none hover:bg-base-200 transition-all duration-200 '}
-                                    ${sortConfig?.key === column.dataId && ' bg-base-300'} ${column.filter && ' relative'}`}
+                                    ${currentSort?.key === column.dataId && ' bg-base-300'} ${column.filter && ' relative'}`}
                                 onClick={() => handleSort(column)}
                             >
                                 <div
@@ -101,7 +70,7 @@ const Table = ({
                                                 <ArrowUp
                                                     size={14}
                                                     className={`transition-all duration-200 ${
-                                                    sortConfig.key === column.dataId && (sortConfig.direction === 'asc')
+                                                    currentSort.key === column.dataId && (currentSort.direction === 'asc')
                                                         ? 'text-warning'
                                                         : 'text-gray-400'
                                                     }`}
@@ -109,7 +78,7 @@ const Table = ({
                                                 <ArrowDown
                                                     size={14}
                                                     className={`transition-all duration-200 -mt-1 ${
-                                                    sortConfig.key === column.dataId && (sortConfig.direction === 'desc')
+                                                    currentSort.key === column.dataId && (currentSort.direction === 'desc')
                                                         ? 'text-warning'
                                                         : 'text-gray-400'
                                                     }`}
@@ -117,7 +86,7 @@ const Table = ({
                                             </motion.span>
                                             <span className="sr-only">
                                                 Sorted {
-                                                    sortConfig.direction === 'asc' ? 'ascending': 'descending'
+                                                    currentSort.direction === 'asc' ? 'ascending': 'descending'
                                                 }
                                             </span>
                                         </>
@@ -125,7 +94,7 @@ const Table = ({
                                     )}
                                     {column.filter && (
                                         <div className='dropdown dropdown-end'>
-                                            <motion.div whileTap={{ scale:0.95 }} tabIndex={0} role='button' className='btn btn-ghost btn-xs'>
+                                            <motion.div whileTap={{ scale:0.95 }} tabIndex={0} role='button' className='btn btn-dash btn-xs'>
                                                 <ListFilter size={14} />
                                             </motion.div>
                                             <AnimatePresence>
@@ -142,7 +111,7 @@ const Table = ({
                                                         <button
                                                             onClick={() => handleFilter(column.dataId, option)}
                                                             className={`${
-                                                                filters[column.dataId] === option ? 'bg-primary text-primary-content' : ''
+                                                                (currentFilters[column.dataId] === option.toLowerCase()) ? 'bg-primary text-primary-content' : ''
                                                             }`}
                                                         >
                                                             {option}
@@ -182,7 +151,7 @@ const Table = ({
                         )
                     )}
                 </tbody>
-                {pagination && pagination.totalItems > itemsPerPage && (
+                {pagination && pagination?.totalItems > pagination?.itemsPerPage && (
                     <tfoot>
                         <tr>
                             <td colSpan={columns?.length} className='text-center'>
