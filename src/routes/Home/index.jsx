@@ -88,7 +88,7 @@ export default function Home() {
         ) :
         (
             <>
-                <div className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14 space-y-5' : 'opacity-0'}`}>
+                <div className={`h-full flex flex-col content-center transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14 space-y-5' : 'opacity-0'}`}>
                     <div>
                         <p className='font-italiana font-extralight text-2xl tracking-widest'>Welcome Back, {user.name}</p>
                     </div>

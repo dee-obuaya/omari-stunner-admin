@@ -37,19 +37,19 @@ export default function MainApp() {
         <Loader size='xl' />
     ) : (
             <div className={ `flex flex-col min-h-screen transition-all ease-in duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-                {/* Header: name and navbar with tabs */}
-                <div id='header' className='sticky top-0 z-10 w-full shadow-md'>
+                {/* Header: name and theme toggle */}
+                <div id='header' className='pb-1 sticky top-0 z-20 w-full shadow-md'>
                     <Header />
                 </div>
 
                 <SessionManager />
 
                 {/* Content */}
-                <main id='content' className='grow overflow-y-auto'>
+                <div id='content' className='grow overflow-y-auto mb-8'>
                     {/* The Outlet component renders the child routes */}
                     <Sidebar content={<Outlet />} />
                     {/* <Outlet /> */}
-                </main>
+                </div>
 
                 {/* Footer: copyright */}
                 <div id='footer' className='w-full bg-base-100'>

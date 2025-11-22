@@ -64,13 +64,14 @@ export default function Sidebar(props) {
     return (
         <div className='drawer h-full'>
             <input id='my-drawer' type='checkbox' className='drawer-toggle' />
-            <div className='drawer-content absolute pt-10 w-full'>
+            <div className='drawer-content pt-10 w-full'>
                 {/* Page content here */}
                 <label htmlFor='my-drawer' className='transition-all ease-in-out duration-300 drawer-button bg-base-300 shadow-md rounded-tr-md rounded-br-md fixed top-18 left-0 p-2 cursor-pointer hover:bg-accent/35'>
                     <SlMenu className='text-lg text-secondary hover:text-accent-content' />
                 </label>
                 {content}
             </div>
+
             <div className='drawer-side'>
                 <label htmlFor='my-drawer' aria-label='close sidebar' className='drawer-overlay'></label>
 

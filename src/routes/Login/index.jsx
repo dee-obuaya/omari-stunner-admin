@@ -8,6 +8,7 @@ import { useAlert } from '../../contexts/AlertContext';
 import Loader from '../../components/Loader';
 import ThemeToggler from '../../components/ThemeToggler'
 import { DASHBOARD } from '../../constants/ServerUrl';
+import Footer from '../../components/Footer';
 
 const Login = () => {
     const {isAuthenticated, login} = useAuth();
@@ -74,10 +75,8 @@ const Login = () => {
                 animate={{scale: 1, opacity: 1}}
                 className={`transition-all ease-initial duration-700 flex flex-col h-full items-center justify-center overflow-y-hidden ${visible ? 'opacity-100 mx-5 md:mx-8 lg:mx-14' : 'opacity-0'}`}
             >
-                {/* {showAlert && <Alert type={alert.type} message={alert.message} />} */}
-
                 <div className='card lg:card-side border border-base-300 w-fit justify-self-center self-center shadow-xl'>
-                    <figure>
+                    <figure className='flex items-center justify-center dark:bg-neutral/15'>
                         <img
                             className='w-52 h-52 lg:w-auto lg:h-auto'
                             src='/images/os_logo_full.png'
@@ -107,6 +106,10 @@ const Login = () => {
                             </button>
                         </form>
                     </div>
+                </div>
+
+                <div id='footer' className='w-full bg-base-100'>
+                    <Footer />
                 </div>
             </motion.div>
         </>

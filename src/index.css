@@ -154,7 +154,6 @@ body, #root {
     -o-transition: all 0.4s ease-in-out;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    overflow-y: hidden;
 }
 
 html::-webkit-scrollbar {
