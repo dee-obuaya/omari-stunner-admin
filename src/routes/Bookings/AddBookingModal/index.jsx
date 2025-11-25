@@ -57,7 +57,7 @@ const AddBookingModal = ({submitNewBooking, handleClose}) => {
             if (res.ok) {
                 const data = await res.json();
                 // console.log('Services data:', data);
-                setServices(data);
+                setServices(data.services);
             } else {
                 console.log('No services');
             }
