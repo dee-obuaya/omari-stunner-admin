@@ -313,12 +313,16 @@ const Users = () => {
         <>
             {/* {revealAlert && <Alert type={alert.type} message={alert.message} />} */}
 
-            <div
+            <motion.div
                 className={`transition-all ease-initial duration-700 ${
                     visible
-                        ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14'
-                        : 'opacity-0'
-                }`}>
+                        ? 'mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14'
+                        : ''
+                }`}
+                initial={{ opacity: 0, y: 30 }}
+                animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                transition={{ duration: 0.7, ease: 'easeOut' }}
+            >
                 <div className='space-y-0.5 mb-4'>
                     <h1 className='text-2xl font-semibold font-italiana uppercase tracking-widest'>
                         Users
@@ -371,7 +375,7 @@ const Users = () => {
                 {isPasswordModalOpen && (
                     <ResetPasswordModal submitUpdatedPassword={updatePassword} handleClose={handleCloseModal} />
                 )}
-            </div>
+            </motion.div>
         </>
     );
 };

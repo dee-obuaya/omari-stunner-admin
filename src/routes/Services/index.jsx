@@ -81,8 +81,8 @@ const Services = () => {
                                     <SlTrash className='text-lg' />
                                 </button>
                             }
-                            title='Delete Tab'
-                            message={`Are you sure you want to delete the ${service.row.original.label} tab? This action cannot be undone.`}
+                            title='Delete Service'
+                            message={`Are you sure you want to delete the ${service.row.original.label} service? This action cannot be undone.`}
                             confirmText='Yes, Delete'
                             cancelText='Cancel'
                             onConfirm={() => handleDeleteClick(service.row.original)}
@@ -198,8 +198,8 @@ const Services = () => {
         };
     };
 
-    const handleDeleteClick = (tab) => {
-        setServiceToDelete({...tab});
+    const handleDeleteClick = (service) => {
+        setServiceToDelete({...service});
         setTimeout(() => {
             deleteService();
         }, 200);
@@ -276,7 +276,12 @@ const Services = () => {
         (
             <>
 
-                <div className={`transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14' : 'opacity-0'}`}>
+                <motion.div
+                    className={`transition-all ease-initial duration-700 ${visible ? 'mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14' : ''}`}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                    transition={{ duration: 0.7, ease: 'easeOut' }}
+                >
                     <div className='space-y-0.5 mb-4'>
                         <h1 className='text-2xl font-semibold font-italiana uppercase tracking-widest'>Services</h1>
                         <p className='text-base font-libertinus tracking-widest text-neutral-500'>Manage services offered</p>
@@ -330,7 +335,7 @@ const Services = () => {
                     {isAddModalOpen && <AddServiceModal submitNewService={addNewService} />}
                     {isEditModalOpen && <EditServiceModal service={serviceToEdit} submitUpdatedService={editService} handleClose={handleCloseModal}/>}
 
-                </div>
+                </motion.div>
             </>
         )
     );

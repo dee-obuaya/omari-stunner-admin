@@ -88,7 +88,12 @@ export default function Home() {
         ) :
         (
             <>
-                <div className={`h-full flex flex-col content-center transition-all ease-initial duration-700 ${visible ? 'opacity-100 mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14 space-y-5' : 'opacity-0'}`}>
+                <motion.div
+                    className={`h-full flex flex-col content-center transition-all ease-initial duration-700 ${visible ? 'mt-10 md:mt-16 lg:mt-5 mx-5 md:mx-8 lg:mx-14 space-y-5' : ''}`}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                    transition={{ duration: 0.7, ease: 'easeOut' }}
+                >
                     <div>
                         <p className='font-italiana font-extralight text-2xl tracking-widest'>Welcome Back, {user.name}</p>
                     </div>
@@ -215,7 +220,7 @@ export default function Home() {
                             <BarChartTrend title={`Booked Services Trend`} data={bookedServices} />
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </>
         )
 	);
