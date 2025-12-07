@@ -4,6 +4,8 @@ export const LOGIN_PAGE = '/login';
 
 export const DASHBOARD = '/admin/home'
 
+export const SOCKET_URL = 'http://localhost:5000';
+
 // Table Keys
 export const IMAGES_TABLE_KEY = 'images-table';
 export const SERVICES_TABLE_KEY = 'services-table';
