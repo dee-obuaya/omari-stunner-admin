@@ -15,6 +15,7 @@ import Services from './routes/Services'
 import Bookings from './routes/Bookings'
 import Users from './routes/Users'
 import Messages from './routes/Messages'
+import Chats from './routes/Chats'
 import { AuthProvider } from './contexts/AuthContext'
 import { AlertProvider } from './contexts/AlertContext'
 
@@ -74,6 +75,10 @@ const router = createBrowserRouter([
                         path: 'messages',
                         element: <Messages />,
                     },
+                    {
+                        path: 'chats',
+                        element: <Chats />
+                    }
                 ]
             }
         ],
