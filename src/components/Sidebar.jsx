@@ -2,7 +2,7 @@
 import React, { useState, usEffect, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { SlHome, SlSettings, SlPicture, SlDirection, SlNotebook, SlMenu, SlDrawer, SlUser } from "react-icons/sl";
+import { SlSpeech, SlHome, SlSettings, SlPicture, SlDirection, SlNotebook, SlMenu, SlDrawer, SlUser } from "react-icons/sl";
 import { LogOut } from 'lucide-react';
 
 export default function Sidebar(props) {
@@ -52,6 +52,9 @@ export default function Sidebar(props) {
             case 'users':
                 document.querySelector('.users')?.classList.toggle('menu-active');
                 break;
+            case 'chats':
+                document.querySelector('.chats')?.classList.toggle('menu-active');
+                break;
             default:
                 document.querySelector('.home')?.classList.toggle('menu-active');
         };
@@ -66,7 +69,10 @@ export default function Sidebar(props) {
             <input id='my-drawer' type='checkbox' className='drawer-toggle' />
             <div className='drawer-content pt-10 w-full'>
                 {/* Page content here */}
-                <label htmlFor='my-drawer' className='transition-all ease-in-out duration-300 drawer-button bg-base-300 shadow-md rounded-tr-md rounded-br-md fixed top-18 left-0 p-2 cursor-pointer hover:bg-accent/35'>
+                <label
+                    htmlFor='my-drawer'
+                    className='menu-icon transition-all ease-in-out duration-300 drawer-button bg-base-300 shadow-md rounded-tr-md rounded-br-md fixed top-18 left-0 p-2 cursor-pointer hover:bg-accent/35'
+                >
                     <SlMenu className='text-lg text-secondary hover:text-accent-content' />
                 </label>
                 {content}
@@ -115,6 +121,11 @@ export default function Sidebar(props) {
                     <li>
                         <Link to='/admin/users' onClick={handleMenuClick} className='users flex items-center'>
                             <SlUser className='pb-0.5 mr-3.5'/>Users
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to='/admin/chats' onClick={handleMenuClick} className='chats flex items-center'>
+                            <SlSpeech className='pb-0.5 mr-3.5'/>Chats
                         </Link>
                     </li>
 
