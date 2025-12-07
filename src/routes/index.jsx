@@ -45,7 +45,7 @@ export default function MainApp() {
                 <SessionManager />
 
                 {/* Content */}
-                <div id='content' className='grow overflow-y-auto mb-8'>
+                <div id='content' className='grow overflow-y-auto mb-8 h-screen'>
                     {/* The Outlet component renders the child routes */}
                     <Sidebar content={<Outlet />} />
                     {/* <Outlet /> */}
