@@ -9,10 +9,9 @@ import Loader from '../../components/Loader';
 import useDeviceType from '../../hooks/useDeviceType';
 
 export default function Chat() {
-    const { socket, sendMessage, sessions, messages, connectToSession } = useAdminChatSocket();
+    const { socket, sendMessage, sessions, messages, connectToSession, sendTyping } = useAdminChatSocket();
     const { deviceType } = useDeviceType();
     const [activeChat, setActiveChat] = useState(null);
-    const [isTyping, setIsTyping] = useState(false);
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
 
@@ -27,18 +26,6 @@ export default function Chat() {
             clearTimeout(visibilityTimer);
         };
     }, []);
-
-    useEffect(() => {
-        if (!socket) return;
-        const onTyping = (data) => {
-        if (data.senderType === 'visitor') {
-            setIsTyping(true);
-            setTimeout(() => setIsTyping(false), 1200);
-        }
-        };
-        socket.on('typing', onTyping);
-        return () => socket.off('typing', onTyping);
-    }, [socket]);
 
     const handleSelectChat = (chat) => {
         setActiveChat(chat);
@@ -66,7 +53,7 @@ export default function Chat() {
                 }
                 ${deviceType === 'mobile' ?
                     'h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]' :
-                    'h-8/12 max-h-8/12'
+                    'h-8/12 max-h-180'
                 }
             `}
             initial={{ opacity: 0, y: 30 }}
@@ -106,10 +93,12 @@ export default function Chat() {
                         `}
                     >
                         <ChatBox
+                            socket={socket}
+                            chatId={activeChat.sessionId}
                             messages={messages}
+                            sendTyping={sendTyping}
                             activeChat={activeChat}
                             onSend={handleSend}
-                            isTyping={isTyping}
                             onBack={deviceType === 'mobile' ? handleBack : undefined}
                         />
                     </motion.div>
