@@ -19,7 +19,7 @@ function throttle(fn, wait) {
 export default function useAdminChatSocket() {
     const { user } = useAuth(); // your auth context; ensure it provides user._id
     const socketRef = useRef(null);
-    const listenersRef = useRef({}); // to prevent duplicate listeners
+    // const listenersRef = useRef({}); // to prevent duplicate listeners
     const [connected, setConnected] = useState(false);
 
     // sessions (chat list)
@@ -109,92 +109,96 @@ export default function useAdminChatSocket() {
             console.log('Admin socket disconnected', reason);
         });
 
-        // Avoid attaching duplicate handlers by keeping track in listenersRef
+        // // Avoid attaching duplicate handlers by keeping track in listenersRef
         // session:new -> server tells admin a new session started
         // when a visitor starts a new chat
-        if (!listenersRef.current['session:new']) {
-            socket.on('session:new', (session) => {
-                listenersRef.current['session:new'] = true;
-                console.log('new chat session: ', session);
+        // if (!listenersRef.current['session:new']) {
+        socket.on('session:new', (session) => {
+            // listenersRef.current['session:new'] = true;
+            console.log('new chat session: ', session);
 
-                setSessions(prev => {
-                    if (prev.find((p) => p.sessionId === session.sessionId)) return prev;
-                    return [session, ...prev];
-                })
-                setIncomingSession(session);
-            });
-        }
+            setSessions(prev => {
+                if (prev.find((p) => p.sessionId === session.sessionId)) return prev;
+                return [session, ...prev];
+            })
+            setIncomingSession(session);
+        });
+        // }
 
         // when a new message arrives
-        if (!listenersRef.current['message:new']) {
-            socket.on('message:new', (rawMsg) => {
-                listenersRef.current['message:new'] = true;
+        // if (!listenersRef.current['message:new']) {
+        socket.on('message:new', (rawMsg) => {
+            // listenersRef.current['message:new'] = true;
 
-                const msg = normalizeMessage(rawMsg);
-                console.log('new message: ', msg);
-                setIncomingMessage(msg);
+            const msg = normalizeMessage(rawMsg);
+            console.log('new message: ', msg);
+            setIncomingMessage(msg);
 
 
-                // if it's for the currently open session, append to messages
-                setMessages((prev) => {
-                    if (msg.sessionId === activeSessionRef.current) {
-                        return [...prev, msg];
-                    }
-                    return prev;
-                });
-
-                // update sessions preview and bump it to top
-                setSessions((prev) => {
-                    const other = prev.filter((s) => s.sessionId !== msg.sessionId);
-                    const existing = prev.find((s) => s.sessionId === msg.sessionId);
-                    const updated = {
-                        ...existing,
-                        lastMessage: msg.message,
-                        lastMessageAt: msg.createdAt,
-                        isOpen: existing ? existing.isOpen : true,
-                    };
-
-                    return [updated, ...other];
-                });
+            // if it's for the currently open session, append to messages
+            setMessages((prev) => {
+                if (msg.sessionId === activeSessionRef.current) {
+                    return [...prev, msg];
+                }
+                return prev;
             });
-        }
+
+            // update sessions preview and bump it to top
+            setSessions((prev) => {
+                const other = prev.filter((s) => s.sessionId !== msg.sessionId);
+                const existing = prev.find((s) => s.sessionId === msg.sessionId);
+                const updated = {
+                    ...existing,
+                    lastMessage: msg.message,
+                    lastMessageAt: msg.createdAt,
+                    isOpen: existing ? existing.isOpen : true,
+                    unread: msg.sessionId !== activeSessionRef.current
+                };
+
+                return [updated, ...other];
+            });
+        });
+        // }
 
         // visitor is typing
-        if (!listenersRef.current['typing']) {
-            socket.on('typing', (data) => {
-                listenersRef.current['typing'] = true;
+        // if (!listenersRef.current['typing']) {
+        socket.on('typing', (data) => {
+            // listenersRef.current['typing'] = true;
 
-                if (data.senderType === 'visitor') {
-                    setTypingState({
-                        sessionId: data.sessionId,
-                        isTyping: true,
-                    });
+            if (data.senderType === 'visitor') {
+                setTypingState({
+                    sessionId: data.sessionId,
+                    isTyping: true,
+                });
 
-                    setTimeout(() => {
-                        setTypingState(null);
-                    }, 1500);
-                }
-            });
-        }
+                setTimeout(() => {
+                    setTypingState(null);
+                }, 1500);
+            }
+        });
+        // }
 
         // message:status (delivered/seen updates)
-        if (!listenersRef.current['message:status']) {
-            socket.on('message:status', ({ messageId, status, sessionId }) => {
-                listenersRef.current['message:status'] = true;
-                setMessages((prev) => prev.map((m) => (m._id === messageId ? { ...m, status } : m)));
-            });
-        }
+        // if (!listenersRef.current['message:status']) {
+        socket.on('message:status', ({ messageId, status }) => {
+            // listenersRef.current['message:status'] = true;
+            setMessages((prev) => prev.map((m) => (m._id === messageId ? { ...m, status } : m)));
+        });
+        // }
 
         // cleanup on unmount
         return () => {
             try {
-                socket.off();
+                socket.off('session:new');
+                socket.off('message:new');
+                socket.off('typing');
+                socket.off('message:status');
                 socket.disconnect();
             } catch (e) {
                 // ignore
             }
             socketRef.current = null;
-            listenersRef.current = {};
+            // listenersRef.current = {};
         };
     }, [user, activeSessionId]);
 
@@ -280,7 +284,7 @@ export default function useAdminChatSocket() {
         throttle((sessionId) => {
             if (!socketRef.current || !sessionId) return;
 
-            socketRef.current.emit('admin:typing', {
+            socketRef.current.emit('typing', {
                 sessionId,
                 senderType: 'admin'
             })
