@@ -4,19 +4,35 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import useDeviceType from '../../hooks/useDeviceType';
 
-export default function ChatBox({ messages = [], onSend, isTyping, activeChat, onBack }) {
+export default function ChatBox({ messages = [], onSend, activeChat, sendTyping, onBack, socket, chatId }) {
     const bottomRef = useRef(null);
     const messagesRef = useRef(null);
     const [text, setText] = useState('');
     const { deviceType } = useDeviceType();
+    const [isTyping, setIsTyping] = useState(false);
 
     useEffect(() => {
         // small delay so scroll happens after layout settles
         const t = setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }, 60);
         return () => clearTimeout(t);
-    }, [messages, isTyping]);
+    }, [messages]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('typing', (data) => {
+            if (data.senderType === 'user' || data.senderType === 'visitor') {
+                setIsTyping(true);
+                bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+
+                setTimeout(() => setIsTyping(false), 5000);
+            }
+        });
+
+        return () => socket.off('typing');
+    }, [socket]);
 
     const handleSend = () => {
         if (!text.trim()) return;
@@ -36,6 +52,13 @@ export default function ChatBox({ messages = [], onSend, isTyping, activeChat, o
         map[date].push(m);
         });
         return Object.entries(map);
+    };
+
+    const handleTyping = (e) => {
+        sendTyping(chatId);
+
+        setText(e.target.value);
+        // socket.emit('typing', {sessionId: chatId, senderType: 'admin'});
     };
 
     return (
@@ -92,7 +115,9 @@ export default function ChatBox({ messages = [], onSend, isTyping, activeChat, o
                 </div>
                 ))}
 
-                {isTyping && <div className='text-sm text-gray-500 py-2'>Typing…</div>}
+                {isTyping &&
+                    <div className='text-sm text-gray-500 p-4'>Client is typing…</div>
+                }
 
                 <div ref={bottomRef} />
             </div>
@@ -102,7 +127,7 @@ export default function ChatBox({ messages = [], onSend, isTyping, activeChat, o
                 <div className='flex items-center gap-2'>
                     <input
                         value={text}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={handleTyping}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                         className='input md:w-full flex-1'
                         placeholder='Type a message...'
