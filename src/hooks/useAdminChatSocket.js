@@ -216,6 +216,9 @@ export default function useAdminChatSocket() {
                 socket.emit('admin:joinSession', {sessionId});
             }
 
+            socket.emit('admin:seen', { sessionId });
+            // console.log('👁️ Admin sent admin:seen for', sessionId);
+
             // fetch messages for that session from the API
             try {
                 const res = await fetch(`${API_BASE_URL}/api/chats/admin/${encodeURIComponent(sessionId)}/messages`,
