@@ -101,7 +101,7 @@ export default function useAdminChatSocket() {
         socket.on('connect', () => {
             setConnected(true);
             socket.emit('admin:join', {adminId: user?._id});
-            console.log('Admin socket connected: ', socket.id);
+            // console.log('Admin socket connected: ', socket.id);
         });
 
         socket.on('disconnect', (reason) => {
@@ -109,13 +109,10 @@ export default function useAdminChatSocket() {
             console.log('Admin socket disconnected', reason);
         });
 
-        // // Avoid attaching duplicate handlers by keeping track in listenersRef
         // session:new -> server tells admin a new session started
         // when a visitor starts a new chat
-        // if (!listenersRef.current['session:new']) {
         socket.on('session:new', (session) => {
-            // listenersRef.current['session:new'] = true;
-            console.log('new chat session: ', session);
+            // console.log('new chat session: ', session);
 
             setSessions(prev => {
                 if (prev.find((p) => p.sessionId === session.sessionId)) return prev;
@@ -123,15 +120,11 @@ export default function useAdminChatSocket() {
             })
             setIncomingSession(session);
         });
-        // }
 
         // when a new message arrives
-        // if (!listenersRef.current['message:new']) {
         socket.on('message:new', (rawMsg) => {
-            // listenersRef.current['message:new'] = true;
-
             const msg = normalizeMessage(rawMsg);
-            console.log('new message: ', msg);
+            // console.log('new message: ', msg);
             setIncomingMessage(msg);
 
 
@@ -142,6 +135,13 @@ export default function useAdminChatSocket() {
                 }
                 return prev;
             });
+
+            // auto-mark as seen if admin is viewing that session
+            if (msg.sessionId === activeSessionRef.current && msg.senderType === 'visitor') {
+                // console.log('👁️ Admin auto-marking message as seen for', msg.sessionId);
+
+                socket.emit('admin:seen', { sessionId: msg.sessionId });
+            }
 
             // update sessions preview and bump it to top
             setSessions((prev) => {
@@ -158,12 +158,9 @@ export default function useAdminChatSocket() {
                 return [updated, ...other];
             });
         });
-        // }
 
         // visitor is typing
-        // if (!listenersRef.current['typing']) {
         socket.on('typing', (data) => {
-            // listenersRef.current['typing'] = true;
 
             if (data.senderType === 'visitor') {
                 setTypingState({
@@ -179,12 +176,12 @@ export default function useAdminChatSocket() {
         // }
 
         // message:status (delivered/seen updates)
-        // if (!listenersRef.current['message:status']) {
-        socket.on('message:status', ({ messageId, status }) => {
-            // listenersRef.current['message:status'] = true;
-            setMessages((prev) => prev.map((m) => (m._id === messageId ? { ...m, status } : m)));
+        socket.on('message:status', ({sessionId, messageIds = [], status }) => {
+            if (sessionId !== activeSessionRef.current) return;
+
+            // console.log('message status update: ', { sessionId, messageIds, status });
+            setMessages((prev) => prev.map((m) => (messageIds.includes(m._id) ? { ...m, status } : m)));
         });
-        // }
 
         // cleanup on unmount
         return () => {
@@ -315,19 +312,6 @@ export default function useAdminChatSocket() {
         }
     }, [])
 
-    // ---------- MARK MESSAGES AS READ ----------
-    const markAsRead = useCallback((sessionId) => {
-        if (!socketRef.current) return;
-
-        socketRef.current.emit('message:read', {
-            sessionId,
-            staffId: userRef.current ? userRef.current._id : null,
-        });
-
-        // optionally update locally
-        setMessages((prev) => prev.map((m) => ({...m, status: 'seen'})));
-    }, []);
-
     return {
         connected,
         socket: socketRef.current,
@@ -342,6 +326,5 @@ export default function useAdminChatSocket() {
         sendMessage,
         sendTyping,
         claimSession,
-        markAsRead,
     };
 };
