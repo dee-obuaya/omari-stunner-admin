@@ -199,6 +199,23 @@ export default function useAdminChatSocket() {
         };
     }, [user, activeSessionId]);
 
+    useEffect(() => {
+        const socket = socketRef.current;
+        if (!socket) return;
+        if (!activeSessionId) return;
+        if (!messages.length) return;
+
+        // only mark as seen if there are unseen visitor messages
+        const hasUnseen = messages.some(
+            (m) => m.senderType === 'visitor' && m.status !== 'seen'
+        );
+        if (!hasUnseen) return;
+
+        console.log('👁️ Admin marking messages as seen for', activeSessionId);
+
+        socket.emit('admin:seen', { sessionId: activeSessionId });
+    }, [activeSessionId, messages]);
+
     // ------ Connect to specific session (admin selects a chat) ------
     const connectToSession = useCallback(
         async (sessionId) => {
