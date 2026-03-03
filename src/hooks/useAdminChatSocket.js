@@ -130,9 +130,26 @@ export default function useAdminChatSocket() {
 
             // if it's for the currently open session, append to messages
             setMessages((prev) => {
+                if (msg.clientId) {
+                    const index = prev.findIndex(
+                        m => m.clientId && m.clientId === msg.clientId
+                    );
+
+                    if (index !== -1) {
+                        const updated = [...prev];
+                        updated[index] = {
+                            ...msg,
+                            inFlight: false,
+                        };
+
+                        return updated;
+                    }
+                }
+
                 if (msg.sessionId === activeSessionRef.current) {
                     return [...prev, msg];
                 }
+
                 return prev;
             });
 
@@ -160,7 +177,7 @@ export default function useAdminChatSocket() {
         });
 
         // visitor is typing
-        socket.on('typing', (data) => {
+        socket.on('user:typing', (data) => {
 
             if (data.senderType === 'visitor') {
                 setTypingState({
@@ -188,7 +205,7 @@ export default function useAdminChatSocket() {
             try {
                 socket.off('session:new');
                 socket.off('message:new');
-                socket.off('typing');
+                socket.off('user:typing');
                 socket.off('message:status');
                 socket.disconnect();
             } catch (e) {
@@ -251,49 +268,123 @@ export default function useAdminChatSocket() {
         },
     [])
 
+    const emitAdminMessage = (msg) => {
+        if (!socketRef.current || !socketRef.current.connected) return;
+        if (msg.inFlight) return;
+
+        // mark inFlight before emit
+        setMessages(prev =>
+            prev.map(m =>
+                m.clientId === msg.clientId
+                    ? { ...m, inFlight: true }
+                    : m
+            )
+        );
+
+        socketRef.current.emit(
+            'message:send',
+            {
+                sessionId: msg.sessionId,
+                senderType: 'admin',
+                message: msg.message,
+                clientId: msg.clientId,
+            },
+            (ack) => {
+                if (!ack || !ack.ok) {
+                    setMessages(prev =>
+                        prev.map(m =>
+                            m.clientId === msg.clientId
+                                ? {...m, status: 'failed', inFlight: false}
+                                : m
+                        )
+                    );
+                }
+
+                setMessages(prev =>
+                    prev.map(m =>
+                        m.clientId === ack.clientId
+                            ? {
+                                ...m,
+                                _id: ack.messageId,
+                                status: ack.status,
+                                createdAt: ack.createdAt,
+                                inFlight: false,
+                            }
+                            : m
+                    )
+                );
+            }
+        );
+    };
+
     // ------ Send Message ------
     const sendMessage = useCallback((sessionId, text) => {
         if (!sessionId || !text || !socketRef.current) return;
         const socket = socketRef.current;
+        const clientId = crypto.randomUUID();
+        const now = new Date().toISOString();
 
         // create a local optimistic message for instant UI feedback
         const optimistic = normalizeMessage({
             id: `local-${Date.now()}`,
+            clientId,
             sessionId,
             senderType: 'admin',
             senderId: userRef.current ? userRef.current._id : null,
             message: text,
             status: 'sent',
-            createdAt: new Date().toISOString(),
+            inFlight: false,
+            createdAt: now,
+            sentAt: now,
         });
 
         setMessages((prev) => [...prev, optimistic]);
 
-        socket.emit('message:send', {
-                sessionId,
-                senderType: 'admin',
-                message: text,
-            },
+        emitAdminMessage(optimistic);
 
-            // optional ack callback
-            (ack) => {
-                // server can ack and return saved message with _id
-                if (ack && ack.savedMessage) {
-                    const saved = normalizeMessage(ack.savedMessage);
-                    setMessages((prev) => prev.map((m) => (m._id === optimistic._id ? saved : m)));
-                } else {
-                    // mark as delivered if server didn't return saved object
-                    setMessages((prev) => prev.map((m) => (m._id === optimistic._id ? { ...m, status: 'delivered' } : m)));
-                }
-            }
-        );
+        // socket.emit('message:send', {
+        //         sessionId,
+        //         senderType: 'admin',
+        //         message: text,
+        //         clientId
+        //     },
+
+        //     // optional ack callback
+        //     (ack) => {
+        //         // server can ack and return saved message with _id
+        //         if (!ack && !ack.ok) {
+        //             setMessages(prev =>
+        //                 prev.map(m =>
+        //                     m._id === optimistic._id
+        //                         ? {...m, status: 'failed'}
+        //                         : m
+        //                 )
+        //             );
+        //             return;
+        //         }
+        //         setMessages(prev =>
+        //             prev.map(m =>
+        //                 m._id === optimistic._id
+        //                     ? {
+        //                         ...m,
+        //                         _id: ack.messageId,
+        //                         status: ack.status,
+        //                         createdAt: ack.createdAt,
+        //                     }
+        //                     : m
+        //             )
+        //         );
+        //     }
+        // );
 
         // notify session list preview
-        setSessions((prev) => {
-            return prev.map((s) =>
-                s.sessionId === sessionId ? { ...s, lastMessage: text, lastMessageAt: new Date().toISOString() } : s
-            );
-        });
+        setSessions(prev =>
+            prev.map(s =>
+                s.sessionId === sessionId
+                    ? {...s, lastMessage: text, lastMessageAt: now}
+                    : s
+            )
+        );
     }, []);
 
     // ---------- Send Typing (throttled) ----------
@@ -301,7 +392,7 @@ export default function useAdminChatSocket() {
         throttle((sessionId) => {
             if (!socketRef.current || !sessionId) return;
 
-            socketRef.current.emit('typing', {
+            socketRef.current.emit('admin:typing', {
                 sessionId,
                 senderType: 'admin'
             })
