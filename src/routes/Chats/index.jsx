@@ -9,11 +9,12 @@ import Loader from '../../components/Loader';
 import useDeviceType from '../../hooks/useDeviceType';
 
 export default function Chat() {
-    const { socket, sendMessage, sessions, messages, connectToSession, sendTyping } = useAdminChatSocket();
+    const { socket } = useAdminChatSocket();
     const { deviceType } = useDeviceType();
     const [activeChat, setActiveChat] = useState(null);
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
+    const sessions = [];
 
     useEffect(() => {
         let visibilityTimer;
@@ -29,12 +30,11 @@ export default function Chat() {
 
     const handleSelectChat = (chat) => {
         setActiveChat(chat);
-        connectToSession(chat.sessionId);
+        // connectToSession(chat.sessionId);
     };
 
     const handleSend = (text) => {
-        if (!activeChat) return;
-        sendMessage(activeChat.sessionId, text);
+        console.log('Sending messages not implemented yet');
     };
 
     const handleBack = () => setActiveChat(null);
@@ -93,10 +93,7 @@ export default function Chat() {
                         `}
                     >
                         <ChatBox
-                            socket={socket}
                             chatId={activeChat.sessionId}
-                            messages={messages}
-                            sendTyping={sendTyping}
                             activeChat={activeChat}
                             onSend={handleSend}
                             onBack={deviceType === 'mobile' ? handleBack : undefined}
