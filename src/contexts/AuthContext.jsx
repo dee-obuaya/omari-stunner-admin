@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 import { useAlert } from './AlertContext';
 import { API_BASE_URL } from '../constants/ServerUrl';
 
@@ -13,6 +14,7 @@ export const AuthProvider = ({ children }) => {
     const [sessionExpiry, setSessionExpiry] = useState(null);
     const timeoutRef = useRef(null);
     const {showAlert} = useAlert();
+    const socketRef = useRef(null);
 
     // 🪄 On mount, check localStorage
     useEffect(() => {
@@ -22,6 +24,34 @@ export const AuthProvider = ({ children }) => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         }
     }, []);
+
+    useEffect(() => {
+
+        if (!user || user.role !== 'admin') return;
+
+
+        const socket = io(API_BASE_URL, {
+            auth: { role: 'admin' },
+            withCredentials: true
+        });
+
+        socketRef.current = socket;
+
+        socket.on('connect', () => {
+            console.log('Admin socket connected:', socket.id);
+
+            socket.emit('admin:connect');
+        });
+
+        socket.on('admin:status', (data) => {
+            console.log('Admin status:', data);
+        });
+
+        return () => {
+            socket.disconnect();
+            socketRef.current = null;
+        };
+    }, [user]);
 
     const checkSession = async(silent=false, refreshIfValid=false) => {
         try {
@@ -137,7 +167,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout, loading, user, sessionExpiry, checkSession, updateSessionExpiry }}>
+        <AuthContext.Provider value={{ isAuthenticated, login, logout, loading, user, sessionExpiry, checkSession, updateSessionExpiry, socket: socketRef.current }}>
             {children}
         </AuthContext.Provider>
     );
