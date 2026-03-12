@@ -22,7 +22,7 @@ export default function useAdminChatSocket() {
         });
 
         socket.on('admin:status', (data) => {
-            console.log('Admin status broadcast: ', data.online);
+            console.log('Admin status update: ', data.online);
         });
 
         socket.on('disconnect', () => {
@@ -34,5 +34,7 @@ export default function useAdminChatSocket() {
         };
     }, []);
 
-    return socketRef;
+    return {
+        socket: socketRef.current
+    };
 }
