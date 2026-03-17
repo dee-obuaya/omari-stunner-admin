@@ -1,40 +1,40 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { API_BASE_URL } from '../constants/ServerUrl';
 
 export default function useAdminChatSocket() {
-    const socketRef = useRef(null);
+    const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-        const socket = io(API_BASE_URL, {
+        const s = io(API_BASE_URL, {
             auth: {
                 role: 'admin',
             },
             withCredentials: true,
         });
 
-        socketRef.current = socket;
+        setSocket(s);
 
-        socket.on('connect', () => {
-            console.log('Admin socket connected: ', socket.id);
+        s.on('connect', () => {
+            console.log('Admin socket connected: ', s.id);
 
-            socket.emit('admin:connect');
+            s.emit('admin:connect');
         });
 
-        socket.on('admin:status', (data) => {
+        s.on('admin:status', (data) => {
             console.log('Admin status update: ', data.online);
         });
 
-        socket.on('disconnect', () => {
+        s.on('disconnect', () => {
             console.log('Admin socket disconnected');
         });
 
         return () => {
-            socket.disconnect();
+            s.disconnect();
         };
     }, []);
 
     return {
-        socket: socketRef.current
+        socket
     };
 }
