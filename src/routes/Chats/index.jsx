@@ -7,6 +7,7 @@ import ChatBox from '../../components/Chat/ChatBox';
 import useAdminChatSocket from '../../hooks/useAdminChatSocket';
 import Loader from '../../components/Loader';
 import useDeviceType from '../../hooks/useDeviceType';
+import { API_BASE_URL } from '../../constants/ServerUrl';
 
 export default function Chat() {
     const { socket } = useAdminChatSocket();
@@ -14,7 +15,8 @@ export default function Chat() {
     const [activeChat, setActiveChat] = useState(null);
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
-    const sessions = [];
+    const [sessions, setSessions] = useState([]);
+    const [messages, setMessages] = useState([]);
 
     useEffect(() => {
         let visibilityTimer;
@@ -28,9 +30,68 @@ export default function Chat() {
         };
     }, []);
 
+    useEffect(() => {
+        const fetchSessions = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/chats/admin/chat-sessions`, {
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                console.log('📦 Sessions from API:', data.sessions);
+
+                if (data.ok) {
+                    setSessions(data.sessions);
+                }
+            } catch (err) {
+                console.error('Failed to fetch sessions:', err);
+            }
+        };
+
+        fetchSessions();
+    }, []);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleHistory = (msgs) => {
+            console.log('📜 chat history received:', msgs);
+            setMessages(msgs);
+
+            // 👁️ use latest session safely
+            setTimeout(() => {
+                if (activeChat?.sessionId) {
+                    socket.emit('message:seen', { sessionId: activeChat.sessionId });
+                }
+            }, 0);
+        };
+
+        socket.on('chat:history', handleHistory);
+
+        return () => {
+            socket.off('chat:history', handleHistory);
+        };
+    }, [socket]);
+
     const handleSelectChat = (chat) => {
+        console.log('🟡 Chat selected:', chat);
+
         setActiveChat(chat);
-        // connectToSession(chat.sessionId);
+        setMessages([]);
+
+        if (socket && chat?.sessionId) {
+            console.log('🟢 Emitting joinSession:', chat.sessionId);
+
+            socket.emit('admin:joinSession', {
+                sessionId: chat.sessionId
+            });
+        } else {
+            console.log('🔴 Socket or sessionId missing', {
+                socket,
+                sessionId: chat?.sessionId
+            });
+        }
     };
 
     const handleSend = (text) => {
@@ -95,6 +156,7 @@ export default function Chat() {
                         <ChatBox
                             chatId={activeChat.sessionId}
                             activeChat={activeChat}
+                            messages={messages}
                             onSend={handleSend}
                             onBack={deviceType === 'mobile' ? handleBack : undefined}
                         />
