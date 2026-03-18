@@ -113,11 +113,11 @@ export default function Chat() {
                 sessionId: chat.sessionId
             });
 
-            console.log('👁️ Emitting message:seen for:', chat.sessionId);
-
-            // emit seen immediately here
-            socket.emit('message:seen', {
-                sessionId: chat.sessionId
+            // wait for history before marking seen
+            socket.once('chat:history', () => {
+                socket.emit('message:seen', {
+                    sessionId: chat.sessionId
+                });
             });
         } else {
             console.log('🔴 Socket or sessionId missing', {
