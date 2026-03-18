@@ -64,7 +64,17 @@ export default function Chat() {
                 status: msg.status || 'sent'
             }));
 
-            setMessages(normalized);
+            // duplicate message protection
+            setMessages(prev => {
+                const merged = [...prev];
+
+                normalized.forEach(msg => {
+                    const exists = merged.some(m => m._id === msg._id);
+                    if (!exists) merged.push(msg);
+                });
+
+                return merged;
+            });
         };
 
         socket.on('chat:history', handleHistory);
