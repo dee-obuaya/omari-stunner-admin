@@ -57,17 +57,33 @@ export default function Chat() {
 
         const handleHistory = (msgs) => {
             console.log('📜 chat history received:', msgs);
-            setMessages(msgs);
 
-            // 👁️ use latest session safely
-            setTimeout(() => {
-                if (activeChat?.sessionId) {
-                    socket.emit('message:seen', { sessionId: activeChat.sessionId });
-                }
-            }, 0);
+            const normalized = msgs.map(msg => ({
+                ...msg,
+                sessionId: msg.sessionId?.toString?.() || msg.sessionId,
+                status: msg.status || 'sent'
+            }));
+
+            setMessages(normalized);
         };
 
         socket.on('chat:history', handleHistory);
+
+        socket.on('message:status', ({ sessionId, status }) => {
+            setMessages(prev =>
+                prev.map(msg => {
+                    if (msg.sessionId !== sessionId) return msg;
+
+                    const priority = { sent: 1, delivered: 2, seen: 3 };
+
+                    if ((priority[status] || 0) < (priority[msg.status] || 0)) {
+                        return msg;
+                    }
+
+                    return { ...msg, status };
+                })
+            );
+        });
 
         return () => {
             socket.off('chat:history', handleHistory);
@@ -84,6 +100,13 @@ export default function Chat() {
             console.log('🟢 Emitting joinSession:', chat.sessionId);
 
             socket.emit('admin:joinSession', {
+                sessionId: chat.sessionId
+            });
+
+            console.log('👁️ Emitting message:seen for:', chat.sessionId);
+
+            // emit seen immediately here
+            socket.emit('message:seen', {
                 sessionId: chat.sessionId
             });
         } else {
