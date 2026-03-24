@@ -10,13 +10,11 @@ import useDeviceType from '../../hooks/useDeviceType';
 import { API_BASE_URL } from '../../constants/ServerUrl';
 
 export default function Chat() {
-    const { socket } = useAdminChatSocket();
+    const { sessions, setSessions, messages, joinSession, markSeen } = useAdminChatSocket();
     const { deviceType } = useDeviceType();
     const [activeChat, setActiveChat] = useState(null);
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
-    const [sessions, setSessions] = useState([]);
-    const [messages, setMessages] = useState([]);
 
     useEffect(() => {
         let visibilityTimer;
@@ -42,7 +40,26 @@ export default function Chat() {
                 console.log('📦 Sessions from API:', data.sessions);
 
                 if (data.ok) {
-                    setSessions(data.sessions);
+
+                    setSessions(prev => {
+                        const existingIds = new Set(prev.map(s => s.sessionId));
+
+                        const newSessions = data.sessions
+                            .filter(s => !existingIds.has(s.sessionId));
+
+                        return [...prev, ...newSessions]
+                    });
+                    // setSessions(prev => {
+                    //     const existingIds = new Set(prev.map(s => normalizedId(s._id)));
+
+                    //     const newSessions = data.sessions
+                    //         .map(s => ({ ...s, _id: normalizedId(s._id) }))
+                    //         .filter(s => !existingIds.has(s._id));
+
+                    //     return [...prev, ...newSessions];
+                    // });
+
+                    setTimeout(() => console.log('Set sessions: ', sessions))
                 }
             } catch (err) {
                 console.error('Failed to fetch sessions:', err);
@@ -52,78 +69,29 @@ export default function Chat() {
         fetchSessions();
     }, []);
 
-    useEffect(() => {
-        if (!socket) return;
+    const activeSessionId = activeChat?.sessionId;
 
-        const handleHistory = (msgs) => {
-            console.log('📜 chat history received:', msgs);
-
-            const normalized = msgs.map(msg => ({
-                ...msg,
-                sessionId: msg.sessionId?.toString?.() || msg.sessionId,
-                status: msg.status || 'sent'
-            }));
-
-            // duplicate message protection
-            setMessages(prev => {
-                const merged = [...prev];
-
-                normalized.forEach(msg => {
-                    const exists = merged.some(m => m._id === msg._id);
-                    if (!exists) merged.push(msg);
-                });
-
-                return merged;
-            });
-        };
-
-        socket.on('chat:history', handleHistory);
-
-        socket.on('message:status', ({ sessionId, status }) => {
-            setMessages(prev =>
-                prev.map(msg => {
-                    if (msg.sessionId !== sessionId) return msg;
-
-                    const priority = { sent: 1, delivered: 2, seen: 3 };
-
-                    if ((priority[status] || 0) < (priority[msg.status] || 0)) {
-                        return msg;
-                    }
-
-                    return { ...msg, status };
-                })
-            );
-        });
-
-        return () => {
-            socket.off('chat:history', handleHistory);
-        };
-    }, [socket]);
+    const filteredMessages = messages.filter(
+        msg => msg.sessionId === activeSessionId
+    );
 
     const handleSelectChat = (chat) => {
         console.log('🟡 Chat selected:', chat);
 
-        setActiveChat(chat);
-        setMessages([]);
+        setTimeout(() => {
+            setActiveChat(chat);
+        }, 50);
 
-        if (socket && chat?.sessionId) {
-            console.log('🟢 Emitting joinSession:', chat.sessionId);
+        // const sessionId = chat._id;
+        const sessionId = chat.sessionId;
 
-            socket.emit('admin:joinSession', {
-                sessionId: chat.sessionId
-            });
+        if (sessionId) {
+            joinSession(sessionId);
 
             // wait for history before marking seen
-            socket.once('chat:history', () => {
-                socket.emit('message:seen', {
-                    sessionId: chat.sessionId
-                });
-            });
-        } else {
-            console.log('🔴 Socket or sessionId missing', {
-                socket,
-                sessionId: chat?.sessionId
-            });
+            setTimeout(() => {
+                markSeen(sessionId);
+            }, 500);
         }
     };
 
@@ -187,9 +155,10 @@ export default function Chat() {
                         `}
                     >
                         <ChatBox
-                            chatId={activeChat.sessionId}
+                            // chatId={activeChat.sessionId}
+                            chatId={activeSessionId}
                             activeChat={activeChat}
-                            messages={messages}
+                            messages={filteredMessages}
                             onSend={handleSend}
                             onBack={deviceType === 'mobile' ? handleBack : undefined}
                         />
