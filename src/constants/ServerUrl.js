@@ -1,10 +1,10 @@
-export const API_BASE_URL = 'http://localhost:5000';
+export const API_BASE_URL = 'http://localhost:5001';
 
 export const LOGIN_PAGE = '/login';
 
 export const DASHBOARD = '/admin/home'
 
-export const SOCKET_URL = 'http://localhost:5000';
+export const SOCKET_URL = 'http://localhost:5001';
 
 // Table Keys
 export const IMAGES_TABLE_KEY = 'images-table';

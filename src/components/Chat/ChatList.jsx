@@ -23,11 +23,12 @@ export default function ChatList ({ chats = [], activeChatId, onSelect }) {
                 )}
 
                 {chats.map((chat) => {
-                    const isActive = activeChatId === chat.sessionId;
+                    const chatId = chat.sessionId;
+                    const isActive = activeChatId === chatId;
 
                     return (
                         <motion.div
-                            key={chat.sessionId}
+                            key={chatId}
                             onClick={() => onSelect(chat)}
                             whileHover={{ scale: 1.02 }}
                             transition={{ duration: 0.15 }}
