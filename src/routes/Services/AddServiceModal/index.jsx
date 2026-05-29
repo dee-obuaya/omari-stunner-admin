@@ -36,43 +36,80 @@ const AddServiceModal = ({submitNewService}) => {
     };
 
     return (
-        <dialog id='add-service-modal' className='modal' onClose={resetForm}>
-            <div className='modal-box lg:max-w-3xl'>
-                <form method='dialog'>
-                    {/* if there is a button in form, it will close the modal */}
-                    <button className='btn btn-sm btn-circle btn-ghost absolute right-2 top-2'>✕</button>
-                </form>
+		<dialog id='add-service-modal' className='modal' onClose={resetForm}>
+			<div className='modal-box lg:max-w-3xl'>
+				<form method='dialog'>
+					{/* if there is a button in form, it will close the modal */}
+					<button className='btn btn-sm btn-circle btn-ghost absolute right-2 top-2'>
+						✕
+					</button>
+				</form>
 
-                <form id='form' className='my-4 px-4 md:px-8 lg:px-0 lg:mx-auto font-libertinus tracking-widest' onSubmit={handleSubmit}>
-                    {/* <h3 className='font-bold text-lg mb-4'>Add New Service</h3> */}
-                    <fieldset className='fieldset lg:max-w-3/4 md:mx-auto lg:px-10'>
-                        <legend className='fieldset-legend text-base'>Service</legend>
-                        <input type='text' name='service' value={`${formInfo.service}`} onChange={handleChange} className='input validator w-full' placeholder='Service Name' required title='Only letters and/or dash (hyphen)' />
-                        <div className="validator-hint">Please enter a service name</div>
+				<form
+					id='form'
+					className='my-4 px-4 md:px-8 lg:px-0 lg:mx-auto font-libertinus tracking-widest'
+					onSubmit={handleSubmit}>
+					{/* <h3 className='font-bold text-lg mb-4'>Add New Service</h3> */}
+					<fieldset className='fieldset lg:max-w-3/4 md:mx-auto lg:px-10'>
+						<legend className='fieldset-legend text-base'>
+							Service
+						</legend>
+						<input
+							type='text'
+							name='service'
+							value={`${formInfo.service}`}
+							onChange={handleChange}
+							className='input validator w-full'
+							placeholder='Service Name'
+							required
+							title='Only letters and/or dash (hyphen)'
+						/>
+						<div className='validator-hint'>
+							Please enter a service name
+						</div>
 
-                        <legend className='fieldset-legend text-base'>Tag</legend>
-                        <select name='tag' defaultValue='Pick a service tag' className='select validator w-full' onChange={handleChange} required>
-                            <option disabled={true}>Pick a service tag</option>
-                            {tags.map((tag, index) => {
-                                return <option key={index}>{tag}</option>
-                            })}
-                        </select>
-                        <div className='validator-hint'>Please choose a service tag</div>
+						<legend className='fieldset-legend text-base'>
+							Tag
+						</legend>
+						<select
+							name='tag'
+							defaultValue='Pick a service tag'
+							className='select validator w-full'
+							onChange={handleChange}
+							required>
+							<option disabled={true}>Pick a service tag</option>
+							{tags.map((tag, index) => {
+								return <option key={index}>{tag}</option>;
+							})}
+						</select>
+						<div className='validator-hint'>
+							Please choose a service tag
+						</div>
 
-                        <legend className='fieldset-legend text-base'>Price</legend>
-                        <input type='number' name='price' value={`${formInfo.price}`} onChange={handleChange} className='input w-full' placeholder='Service Price' />
-                   </fieldset>
+						<legend className='fieldset-legend text-base'>
+							Price
+						</legend>
+						<input
+							type='number'
+							name='price'
+							value={`${formInfo.price}`}
+							onChange={handleChange}
+							className='input w-full'
+							placeholder='Service Price'
+						/>
+					</fieldset>
 
-                    <button
-                        value='submit'
-                        className='btn btn-sm btn-neutral mt-4 w-max flex justify-self-end uppercase tracking-wider font-italiana font-extralight'
-                    >
-                        Add Service
-                    </button>
-                </form>
-            </div>
-        </dialog>
-    );
+					<div className='lg:max-w-3/4 lg:px-10 md:mx-auto flex justify-end'>
+						<button
+							value='submit'
+							className='btn btn-sm btn-primary mt-4 w-max flex justify-self-end uppercase tracking-widest font-italiana font-semibold'>
+							Add Service
+						</button>
+					</div>
+				</form>
+			</div>
+		</dialog>
+	);
 };
 
 export default AddServiceModal;
