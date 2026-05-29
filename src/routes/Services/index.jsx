@@ -56,6 +56,10 @@ const Services = () => {
         {
             title: 'Price',
             dataId: 'price',
+            render: (service) => {
+                const formattedPrice = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(service.row.original.price || 0);
+                return formattedPrice === '₦0.00' ? 'N/A' : formattedPrice;
+            }
         },
         {
             title: 'Actions',
@@ -295,7 +299,7 @@ const Services = () => {
                             whileHover={{scale: 1}}
                             whileTap={{scale: 0.85}}
                             transition={{duration: 0.4, delay: 0.25, ease: [0, 0.71, 0.2, 1.01],}}
-                            className='btn btn-sm md:btn-md lg:btn-lg font-extralight font-libertinus tracking-widest uppercase flex items-center'
+                            className='btn btn-sm md:btn-md lg:btn-lg btn-info font-extralight font-libertinus tracking-widest uppercase flex items-center'
                             onClick={()=> {
                                 setIsAddModalOpen(true);
                                 setTimeout(() => {
