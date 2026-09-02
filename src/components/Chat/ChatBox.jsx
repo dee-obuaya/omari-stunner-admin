@@ -55,7 +55,7 @@ export default function ChatBox({ messages = [], onSend, activeChat, sendTyping,
     };
 
     const handleTyping = (e) => {
-        sendTyping(chatId);
+        sendTyping?.(chatId);
 
         setText(e.target.value);
         // socket.emit('typing', {sessionId: chatId, senderType: 'admin'});
@@ -93,7 +93,7 @@ export default function ChatBox({ messages = [], onSend, activeChat, sendTyping,
                         {date}
                     </div>
                     {msgs.map((m) => {
-                        const isAdmin = m.senderType === 'admin';
+                        const isAdmin = m.sender === 'admin';
                         return (
                             <motion.div
                                 key={m._id}
