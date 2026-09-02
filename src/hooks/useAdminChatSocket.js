@@ -173,11 +173,17 @@ export default function useAdminChatSocket() {
         socketRef.current.emit('message:seen', { sessionId });
     };
 
+    const sendMessage = (sessionId, message) => {
+        if (!socketRef.current || !isConnectedRef.current) return;
+        socketRef.current.emit('admin:sendMessage', { sessionId, message });
+    };
+
     return {
         sessions,
         setSessions,
         messages,
         joinSession,
         markSeen,
+        sendMessage,
     };
 }
