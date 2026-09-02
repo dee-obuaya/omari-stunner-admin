@@ -10,7 +10,7 @@ import useDeviceType from '../../hooks/useDeviceType';
 import { API_BASE_URL } from '../../constants/ServerUrl';
 
 export default function Chat() {
-    const { sessions, setSessions, messages, joinSession, markSeen } = useAdminChatSocket();
+    const { sessions, setSessions, messages, joinSession, markSeen, sendMessage } = useAdminChatSocket();
     const { deviceType } = useDeviceType();
     const [activeChat, setActiveChat] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -96,7 +96,8 @@ export default function Chat() {
     };
 
     const handleSend = (text) => {
-        console.log('Sending messages not implemented yet');
+        if (!activeSessionId) return;
+        sendMessage(activeSessionId, text);
     };
 
     const handleBack = () => setActiveChat(null);
